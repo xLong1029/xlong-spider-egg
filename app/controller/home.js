@@ -8,10 +8,14 @@ class HomeController extends Controller {
   //   ctx.body = 'hi, welcome to xlong-spider-egg.';
   // }
 
-  // 首页
 	async index() {
 		const data = await this.ctx.service.index.getIndex();
 		await this.ctx.render('index.html', data);
+  }
+  
+  // 获取数据
+	async spider() {
+		this.ctx.body = await this.ctx.service.spider.getData();
 	}
 }
 

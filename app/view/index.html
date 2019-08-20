@@ -9,6 +9,44 @@
 {% block content %}
     
     <div class="container">
-        <div class="index-content">欢迎使用xLong-spider-egg.</div>
+        <div class="index-content">
+            <label>网址：</label><input id="webInput" class="input" type="text" value="" placeholder="请输入网址"/>
+            <button class="button ml-sm" onclick="getData()">测试</button>
+        </div>
     </div>
+{% endblock %}
+{% block script %}
+
+    <script type="text/javascript">
+        function getData(){
+            var $webInput = $('#webInput');
+            var value = $webInput.val();
+            if(value && value !== ''){
+                console.log('开始爬取信息');
+
+                $.ajax({
+                    type:'GET',
+                    url: `/spider?web=${value}`,
+                    dataType: 'json', 
+                    success: function(res) {
+                       console.log(res);
+
+                        if(res.code == 200){
+                            console.log('数据爬取结束');
+                        }
+                        else{
+                            alert(res.msg);
+                        }
+                    },
+                    error: function(err){
+                       console.log('爬取出错', err);
+                    }
+                });
+            }
+            else{
+                alert('请输入网址');
+            }
+        }
+    </script>
+
 {% endblock %}
