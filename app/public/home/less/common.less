@@ -221,7 +221,20 @@ img {
     }
 }
 
+/* 表单 */
+
+.form{
+    &-inline{
+        .mb(15);
+
+        &__lable{
+
+        }
+    }
+}
+
 /* 输入框 */
+
 .input{
     .ht(38);
     .lh(38);
@@ -234,16 +247,37 @@ img {
 }
 
 /* 按钮 */
+
 .button{
     .ht(38);
     .lh(38);
     .minW(80);
+    .padding(0, 10);
     .border_radius(4);
 
-    color: #fff;
     outline: none;
-    background: @base_color;
-    border: none;
+    cursor: pointer;   
+    border: 1px solid #d9d9d9;
+    background: #fff;
+    color: @base_color;
+
+    &.primary{
+        background: @base_color;
+        border: none;
+        color: #fff;
+
+        &:hover{
+            background: lighten(@base_color, 10%);
+        }
+    }
+
+    &.defult{
+        border: 1px solid #d9d9d9;
+        color: @base_color;
+        &:hover{
+            background: #fafafa;
+        }  
+    }
 }
 
 
