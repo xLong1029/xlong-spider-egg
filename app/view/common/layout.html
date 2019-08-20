@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+  <head>
+    <meta charset="utf-8" />
+    <title>{{ title }}</title>
+    <meta name="referrer" content="no-referrer">
+    {# 设置信息 #}
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Cache-Control" content="no-siteapp" />
+    <meta http-equiv="pragma" content="no-cache" />
+    <meta http-equiv="content-type" content="no-cache, must-revalidate" />
+    {# 开发者信息 #}
+    <meta name="front-end technicist" content="xLong">
+    <meta name="back-end technicist" content="xLong">
+    <meta name="designer" content="xLong">
+    {# 描述信息 #}
+    <meta content="{{ keywords }}" name="keywords" />
+    <meta content="{{ description }}" name="description" />
+    <meta name="copyright" content="XLONG JIA LI DUN Co.,Ltd.">
+    {# 图标 #}
+    <link rel="icon" type="image/x-icon" href="/public/images/favicon.ico" />
+    {# 样式及脚本文件 #}
+    <link rel="stylesheet" href="/public/css/common.css" />
+    
+    {% block head %}
+    {% endblock %}
+  </head>
+  <body>
+    {% include "./header.html" %}
+    
+    <section class="content">
+		{% block content %}
+    {% endblock %}
+    </section>
+
+    {% include "./footer.html" %}
+
+    {% block script %}
+    {% endblock %}
+  </body>
+</html>
