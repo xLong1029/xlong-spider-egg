@@ -31,13 +31,13 @@ class SpiderService extends Service {
 
                 switch (type) {
                     case 1:
-                        res.data = this.getScreenshot(web);
+                        res.data = await this.getScreenshot(web);
                         break;
                     case 2:
-                        res.data = this.getPDF(web);
+                        res.data = await this.getPDF(web);
                         break;
                     case 3:
-                        res.data = this.getInfo(web);
+                        res.data = await this.getInfo(web);
                         break;
                     default:
                         res.msg = 'type参数错误，请排查';
@@ -53,7 +53,7 @@ class SpiderService extends Service {
     }
 
     // 获取屏幕截图
-    getScreenshot(web) {
+    async getScreenshot(web) {
         // const browser = await puppeteer.launch();
         // const page = await browser.newPage();
         // await page.goto(web);
@@ -65,12 +65,12 @@ class SpiderService extends Service {
     }
 
     // 获取PDF
-    getPDF(web) {
+    async getPDF(web) {
         return 'pdf';
     }
 
     // 获取信息
-    getInfo(web) {
+    async getInfo(web) {
         return 'info';
     }
 }
