@@ -16,8 +16,8 @@
             <div class="form-inline">
                 <label class="form-inline__label"></label>
                 <button class="button primary" onclick="getData(1)">获取页面截图</button>
-                <button class="button primary ml-sm" onclick="getData(2)">获取PDF</button>
-                <button class="button primary ml-sm" onclick="getData(3)">测试</button>
+                {# <button class="button primary ml-sm" onclick="getData(2)">获取PDF</button>
+                <button class="button primary ml-sm" onclick="getData(3)">测试</button> #}
                 <button class="button defult ml-sm" onclick="reset()">重置</button>
             </div>
         </div>
@@ -39,7 +39,10 @@
                        console.log(res);
 
                         if(res.code == 200){
-                            console.log('数据获取结束');
+                            if(res.data){
+                                window.open(res.data);
+                                console.log('数据获取结束');
+                            }                            
                         }
                         else{
                             alert(res.msg);
