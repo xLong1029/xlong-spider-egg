@@ -5,17 +5,11 @@
  * 版本 : version 1.0
  */
 
-// 设置默认图片
-function defaultImg(){
-    var img = event.srcElement;
-    img.src = "/public/images/default.jpg"; 
-    img.onerror = null
-}
+var $alert = $('#alert');
+var $loading = $('#loading');
 
 // 设置默认图片
 function showAlertMsg(type, msg){
-    var $alert = $('#alert');
-    
     $alert.attr('class', `message message-show message--${type}`);
     $alert.find('.message__content').text(msg);
 
@@ -23,4 +17,23 @@ function showAlertMsg(type, msg){
         $alert.removeClass(`message-show`);
         $alert.find('.message__content').text('');
     }, 1000);
+}
+
+// 设置默认图片
+function showLoading(msg){
+    $loading.find('.loading-spinner__text').text(msg);
+    $loading.fadeIn();
+}
+
+// 设置默认图片
+function hideLoading(){
+    $loading.find('.loading-spinner__text').text('');
+    $loading.fadeOut();
+}
+
+// 设置默认图片
+function defaultImg(){
+    var img = event.srcElement;
+    img.src = "/public/images/default.jpg"; 
+    img.onerror = null;
 }

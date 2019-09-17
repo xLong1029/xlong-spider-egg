@@ -133,7 +133,29 @@
 }
 
 .hvr-radial-out:hover:before,
-.hvr-radial-out:focus:before{
+.hvr-radial-out:focus:before {
     -webkit-transform: scale(2);
     transform: scale(2);
+}
+
+@keyframes rotating {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
+@-webkit-keyframes rotating {
+	0% {
+		-webkit-transform: rotate(0deg);
+	}
+	100% {
+		-webkit-transform: rotate(360deg);
+	}
+}
+
+.rotating{
+    -webkit-animation: rotating 2s linear infinite;
+    animation: rotating 2s linear infinite;
 }

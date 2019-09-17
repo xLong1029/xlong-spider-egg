@@ -32,6 +32,7 @@
 
             if(value && value !== ''){
                 console.log('开始获取数据');
+                showLoading('正在获取数据，请稍后...');
 
                 $.ajax({
                     type:'GET',
@@ -41,13 +42,14 @@
 
                         if(res.code == 200){
                             if(res.data){
-                                showAlertMsg('error', '操作成功');
                                 window.open(res.data);
+                                hideLoading();
+                                showAlertMsg('success','数据获取成功');
                                 console.log('数据获取结束');
                             }                            
                         }
                         else{
-                            alert(res.msg);
+                            alert(res.msg);  
                             showAlertMsg('error', res.msg);
                         }
                     },

@@ -7,12 +7,12 @@
 
 @font-face {
     font-family: 'iconfont';  /* project id 1191909 */
-    src: url('//at.alicdn.com/t/font_1191909_ybd327kylvj.eot');
-    src: url('//at.alicdn.com/t/font_1191909_ybd327kylvj.eot?#iefix') format('embedded-opentype'),
-    url('//at.alicdn.com/t/font_1191909_ybd327kylvj.woff2') format('woff2'),
-    url('//at.alicdn.com/t/font_1191909_ybd327kylvj.woff') format('woff'),
-    url('//at.alicdn.com/t/font_1191909_ybd327kylvj.ttf') format('truetype'),
-    url('//at.alicdn.com/t/font_1191909_ybd327kylvj.svg#iconfont') format('svg');
+    src: url('//at.alicdn.com/t/font_1191909_5jjbnmgp1z5.eot');
+    src: url('//at.alicdn.com/t/font_1191909_5jjbnmgp1z5.eot?#iefix') format('embedded-opentype'),
+    url('//at.alicdn.com/t/font_1191909_5jjbnmgp1z5.woff2') format('woff2'),
+    url('//at.alicdn.com/t/font_1191909_5jjbnmgp1z5.woff') format('woff'),
+    url('//at.alicdn.com/t/font_1191909_5jjbnmgp1z5.ttf') format('truetype'),
+    url('//at.alicdn.com/t/font_1191909_5jjbnmgp1z5.svg#iconfont') format('svg');
 }
 
 /* HTML文档常规设置 */
@@ -295,6 +295,7 @@ img {
 }
 
 /* 提示内容 */
+
 .message{
     opacity: 0;
     min-width: 380px;
@@ -305,9 +306,9 @@ img {
     border-color: #EBEEF5;
     position: fixed;
     left: 50%;
-    top: 50%;
-    -webkit-transform: translate(-50%, -50%);
-    transform: translate(-50%, -50%);
+    top: 50px;
+    -webkit-transform: translate(-50%, -100%);
+    transform: translate(-50%, -100%);
     background-color: #edf2fc;
     -webkit-transition: opacity .3s,top .4s,-webkit-transform .4s;
     transition: opacity .3s,top .4s,-webkit-transform .4s;
@@ -353,12 +354,55 @@ img {
 
     &-show{
         opacity: 1;
+        -webkit-transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%);
     }
 
     &-fade{
         opacity: 0;
     }
 }
+
+/* 加载 */
+
+#loading{
+    display: none;
+}
+
+.loading{
+    &-mask{
+        position: absolute;
+        z-index: 2000;
+        background-color: rgba(0, 0, 0, 0.7);
+        margin: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        transition: opacity 0.3s;
+    }
+
+    &-spinner {
+        top: 50%;
+        margin-top: -21px;
+        width: 100%;
+        text-align: center;
+        position: absolute;
+        color: #fff;
+
+        &__icon{
+            display: inline-block;
+            font-size: 18*@unit;
+        }
+
+        &__text {
+            margin: 3px 0;
+            font-size: 14px;
+        }
+    }
+}
+
+
 
 /* 解决移动端系统自带样式问题 */
 

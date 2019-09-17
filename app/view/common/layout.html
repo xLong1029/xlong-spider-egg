@@ -21,8 +21,8 @@
     {# 图标 #}
     <link rel="icon" type="image/x-icon" href="/public/home/images/favicon.ico" />
     {# 样式及脚本文件 #}
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_1191909_5jjbnmgp1z5.css" />
     <link rel="stylesheet" href="/public/home/css/common.css" />
-    <link rel="stylesheet" href="//at.alicdn.com/t/font_1191909_ybd327kylvj.css" />
     
     {% block head %}
     {% endblock %}
@@ -37,9 +37,17 @@
 
     {% include "./footer.html" %}
 
+    {# 提示内容 #}
     <div id="alert" class="message message--info">
       <i class="message__icon iconfont icon-info"></i>
-      <div class="message__content">提示内容</div>
+      <div class="message__content">提示信息</div>
+    </div>
+    {# 加载 #}
+    <div id="loading" class="loading-mask">
+      <div class="loading-spinner">
+        <i class="loading-spinner__icon iconfont icon-loadingout rotating"></i>
+        <div class="loading-spinner__text">加载中... </div>
+      </div>
     </div>
 
     <script src="https://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
