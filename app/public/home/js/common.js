@@ -16,7 +16,7 @@ function showAlertMsg(type, msg){
     setTimeout(function(){
         $alert.removeClass(`message-show`);
         $alert.find('.message__content').text('');
-    }, 1000);
+    }, 1500);
 }
 
 // 设置默认图片

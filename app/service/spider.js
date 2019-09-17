@@ -2,23 +2,19 @@
 
 const Service = require('egg').Service;
 const puppeteer = require('puppeteer');
-// 文件操作对象
-const fs = require('fs');
-// 路径操作对象
-const path = require('path');
+
 // 加密模块
 const crypto = require('crypto');
 
-
 // 跳转等待时间
-const timeout = 10000;
+const timeout = 20000;
 // 文档加载完才跳转页面
 const waitUntil = 'domcontentloaded';
 
 class SpiderService extends Service {
     /**
      * 获取数据
-     * @param {*} type 1获取截图，2获取pdf文件
+     * @param {*} type 1获取截图，2获取pdf文件，3获取页面数据
      */
     async getData(type) {
         let res = {
@@ -62,85 +58,6 @@ class SpiderService extends Service {
         return res;
     }
 
-    // 读取路径信息 
-    async getStat(path) {
-        return new Promise((resolve, reject) => {
-            fs.stat(path, (err, stats) => {
-                if (err) resolve(false);
-                else resolve(stats);
-            })
-        })
-    }
-
-    // 创建路径
-    async mkdir(dir) {
-        return new Promise((resolve, reject) => {
-            fs.mkdir(dir, err => {
-                if (err) resolve(false);
-                else resolve(true);
-            })
-        })
-    }
-
-    // 路径是否存在，不存在则创建
-    async dirExists(dir) {
-        let isExists = await this.getStat(dir);
-        // 如果该路径且不是文件，返回true
-        if (isExists && isExists.isDirectory()) {
-            return true;
-        }
-        // 如果该路径存在但是文件，返回false
-        else if (isExists) {
-            return false;
-        }
-        // 如果该路径不存在
-        let tempDir = path.parse(dir).dir; // 拿到上级路径
-        // 递归判断，如果上级目录也不存在，则会代码会在此处继续循环执行，直到目录存在
-        let status = await this.dirExists(tempDir);
-        let mkdirStatus;
-        if (status) {
-            mkdirStatus = await this.mkdir(dir);
-        }
-        return mkdirStatus;
-    }
-
-    // 获取文件存储路径
-    async getStoreDir(dir) {
-        if (dir) {
-            await this.dirExists(`app/public/upload/${dir}`);
-            return `app/public/upload/${dir}`;
-        } else {
-            return 'app/public/upload';
-        }
-    }
-
-    // 查找文件是否存在
-    async fileExists(dir) {
-        return new Promise((resolve, reject) => {
-            // 判断文件是否存在
-            fs.exists(dir, (exists) => {
-                if(exists) resolve(true);
-                else reject(false);
-            });
-        });
-    }
-
-    // 获取文件路径
-    async getFile(fileName, dir) {
-        if(!fileName || !dir) return null;
-
-        // 找到存放的位置
-        const target = path.join(this.config.baseDir, `${dir}/`, fileName);
-        const isExists = await this.fileExists(target);
-
-        // 文件存在则返回文件路径
-        if(isExists){
-            // 只取public/upload/xxx路径
-            return `${dir.substring(4,dir.length)}/${fileName}`;
-        }
-        else return null;
-    }
-
     // 页面滚动获取数据
     async pageAutoScroll(page) {
         return page.evaluate(() => {
@@ -170,8 +87,10 @@ class SpiderService extends Service {
             })
         });
     }
-
-    // 获取屏幕截图
+    /**
+     * 获取屏幕截图
+     * @param {*} web 站点URL
+     */
     async getScreenshot(web) {
         // 创建一个浏览器实例 Browser 对象
         const browser = await puppeteer.launch({
@@ -190,7 +109,7 @@ class SpiderService extends Service {
         // 创建页面 Page 对象
         const page = await browser.newPage();
         // 跳转到指定的页面
-        await page.goto(web, { timeout, waitUntil}).catch(err => { console.log(err) });
+        await page.goto(web, { timeout, waitUntil}).catch(err => console.log(err));
 
         const res = await this.pageAutoScroll(page);
         if(res.code == 200){
@@ -204,19 +123,22 @@ class SpiderService extends Service {
             // 关闭浏览器
             await browser.close();
 
-            const data = await this.getFile(fileName, dir);
+            const data = await this.ctx.service.store.getFile(fileName, dir);
             return { code: 200 , data, msg: '请求成功'};
         }
         else return res;
     }
 
-    // 获取PDF
-    // PDF在Chrome浏览器下，需要无头浏览器设置，解决“PrintToPDF is not implemented”的问题
+    /**
+     * 获取PDF
+     * PDF在Chrome浏览器下，需要无头浏览器设置，解决“PrintToPDF is not implemented”的问题
+     * @param {*} web 站点URL
+     */
     async getPDF(web) {
         const browser = await puppeteer.launch();
 
         const page = await browser.newPage();
-        await page.goto(web, { timeout, waitUntil: 'networkidle0' }).catch(err => { console.log(err) });
+        await page.goto(web, { timeout, waitUntil: 'networkidle0' }).catch(err => console.log(err));
 
         const title = await page.title();
         const fileName = `${new Date().getTime() + crypto.createHash('md5').update(title).digest('hex')}.pdf`;
@@ -226,13 +148,83 @@ class SpiderService extends Service {
 
         await browser.close();
 
-        const data = await this.getFile(fileName, dir);
+        const data = await this.ctx.service.store.getFile(fileName, dir);
         return { code: 200 , data, msg: '请求成功'};        
     }
 
-    // 获取信息
+    /**
+     * 获取章节内容
+     * @param {*} browser 浏览器实例
+     * @param {*} element 章节元素
+     */
+    async getContent(browser, element){
+
+    }
+
+    /**
+     * 获取信息
+     * 这里需要根据个人对抓取的数据需求进行节点分析和代码修改
+     * @param {*} web 站点URL
+     */
     async getInfo(web) {
-        return 'info';
+        const browser = await puppeteer.launch();
+
+        const page = await browser.newPage();
+
+        // 设置浏览器信息
+        const UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/63.0.3239.84 Chrome/63.0.3239.84 Safari/537.36";
+
+        await Promise.all([
+            page.setUserAgent(UA),
+            // 允许运行js
+            page.setJavaScriptEnabled(true),
+            // 设置页面视口的大小
+            page.setViewport({ width: 1920, height: 1080 }),
+        ]);
+
+        await page.goto(web);
+
+        // 通过节点获取章节列表
+        const sectionList = await page.evaluate(() => {
+            const list = [...document.querySelectorAll('.Volume > dd a')];
+            return list.map(el => {
+                return { url: el.href.trim(), title: el.innerText };
+            })
+        })
+
+        // console.log('章节列表：', sectionList);
+
+        const data = [];
+
+        // 通过章节获取内容
+        for (let i = 0; i < sectionList.length; i ++) {
+            const section = sectionList[i];
+
+            //跳转到网址
+            const respond = await page.goto(section.url, { timeout, waitUntil }).catch(err => console.log(err));
+            if (!respond) {   
+                browser.close();
+                return { code: 404 , msg: '请求失败，无法访问该页面'};
+            }
+
+            // 等章节内容加载完
+            await page.waitForSelector('.readAreaBox');
+
+            // 获取章节内容
+            const content = await page.evaluate(() => {
+                const list = [...document.querySelectorAll('.readAreaBox > .p p')];
+
+                let cot = '';
+                list.map(el => cot += `${el.innerText}<br/>`);
+
+                return cot;
+            })
+
+            data.push(`<h4>${section.title}</h4><br/>${content}<br/>`);
+        }
+
+        // console.log(data);
+        return { code: 200 , data, msg: '请求成功'}; 
     }
 
 }
