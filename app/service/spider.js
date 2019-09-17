@@ -117,7 +117,7 @@ class SpiderService extends Service {
             const title = await page.title();
             const fileName = `${new Date().getTime() + crypto.createHash('md5').update(title).digest('hex')}.jpg`;
             // 对页面进行截图并保存
-            const dir = await this.getStoreDir('screenshot');        
+            const dir = await this.ctx.service.store.getStoreDir('screenshot');        
             await page.screenshot({ path: `${dir}/${fileName}`, fullPage: true });
 
             // 关闭浏览器
@@ -143,7 +143,7 @@ class SpiderService extends Service {
         const title = await page.title();
         const fileName = `${new Date().getTime() + crypto.createHash('md5').update(title).digest('hex')}.pdf`;
 
-        const dir = await this.getStoreDir('pdf');        
+        const dir = await this.ctx.service.store.getStoreDir('pdf');        
         await page.pdf({ path: `${dir}/${fileName}`, printBackground: true, width: '1920' });
 
         await browser.close();
