@@ -5,6 +5,16 @@
 @import "layout";
 @import "animation";
 
+@font-face {
+    font-family: 'iconfont';  /* project id 1191909 */
+    src: url('//at.alicdn.com/t/font_1191909_ybd327kylvj.eot');
+    src: url('//at.alicdn.com/t/font_1191909_ybd327kylvj.eot?#iefix') format('embedded-opentype'),
+    url('//at.alicdn.com/t/font_1191909_ybd327kylvj.woff2') format('woff2'),
+    url('//at.alicdn.com/t/font_1191909_ybd327kylvj.woff') format('woff'),
+    url('//at.alicdn.com/t/font_1191909_ybd327kylvj.ttf') format('truetype'),
+    url('//at.alicdn.com/t/font_1191909_ybd327kylvj.svg#iconfont') format('svg');
+}
+
 /* HTML文档常规设置 */
 * {
     padding: 0; 
@@ -284,6 +294,71 @@ img {
     }
 }
 
+/* 提示内容 */
+.message{
+    opacity: 0;
+    min-width: 380px;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #EBEEF5;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    background-color: #edf2fc;
+    -webkit-transition: opacity .3s,top .4s,-webkit-transform .4s;
+    transition: opacity .3s,top .4s,-webkit-transform .4s;
+    transition: opacity .3s,transform .4s,top .4s;
+    transition: opacity .3s,transform .4s,top .4s,-webkit-transform .4s;
+    padding: 15px 15px 15px 20px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    border-radius: 4px;
+    overflow: hidden;
+
+    &--info{
+        background-color: #ebf4fa;
+        border-color: #dbedf9;
+        color: @base_color;
+    }
+
+    &--success{
+        background-color: #f0f9eb;
+        border-color: #e1f3d8;
+        color: #67C23A;
+    }
+
+    &--warning{
+        background-color: #fdf6ec;
+        border-color: #faecd8;
+        color: #E6A23C;
+    }
+
+    &--error{
+        background-color: #fef0f0;
+        border-color: #fde2e2;
+        color: #F56C6C;
+    }
+
+    &__icon{
+        margin-right: 10px;
+    }
+
+    &-show{
+        opacity: 1;
+    }
+
+    &-fade{
+        opacity: 0;
+    }
+}
 
 /* 解决移动端系统自带样式问题 */
 

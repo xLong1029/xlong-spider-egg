@@ -22,7 +22,7 @@
     <link rel="icon" type="image/x-icon" href="/public/home/images/favicon.ico" />
     {# 样式及脚本文件 #}
     <link rel="stylesheet" href="/public/home/css/common.css" />
-    <script src="https://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_1191909_ybd327kylvj.css" />
     
     {% block head %}
     {% endblock %}
@@ -36,6 +36,14 @@
     </section>
 
     {% include "./footer.html" %}
+
+    <div id="alert" class="message message--info">
+      <i class="message__icon iconfont icon-info"></i>
+      <div class="message__content">提示内容</div>
+    </div>
+
+    <script src="https://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
+    <script src="/public/home/js/common.js"></script>
 
     {% block script %}
     {% endblock %}

@@ -11,13 +11,13 @@
     <div class="container">
         <div class="index-content form">
             <div class="form-inline">
-                <label class="form-inline__label">网址：</label><input id="webInput" class="input form-inline__input" type="text" value="" placeholder="请输入网址"/>
+                <label class="form-inline__label">网址：</label><input id="webInput" class="input form-inline__input" style="width:80%;" type="text" value="" placeholder="请输入网址"/>
             </div>
             <div class="form-inline">
                 <label class="form-inline__label"></label>
-                <button class="button primary" onclick="getData(1)">获取全屏截图</button>
+                <button class="button primary" onclick="getData(1)">获取页面截图</button>
                 <button class="button primary ml-sm" onclick="getData(2)">获取页面PDF</button>
-                {# <button class="button primary ml-sm" onclick="getData(3)">测试</button> #}
+                {# <button class="button primary ml-sm" onclick="getData(3)">获取页面信息</button> #}
                 <button class="button defult ml-sm" onclick="reset()">重置</button>
             </div>
         </div>
@@ -29,6 +29,7 @@
         function getData(type){
             var $webInput = $('#webInput');
             var value = $webInput.val();
+
             if(value && value !== ''){
                 console.log('开始获取数据');
 
@@ -40,12 +41,14 @@
 
                         if(res.code == 200){
                             if(res.data){
+                                showAlertMsg('error', '操作成功');
                                 window.open(res.data);
                                 console.log('数据获取结束');
                             }                            
                         }
                         else{
                             alert(res.msg);
+                            showAlertMsg('error', res.msg);
                         }
                     },
                     error: function(err){
