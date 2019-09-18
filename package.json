@@ -11,16 +11,15 @@
     "egg-scripts": "^2.11.0",
     "egg-view-nunjucks": "^2.2.0",
     "puppeteer": "^1.19.0",
-    "sqlite3": "^4.1.0"
+    "sqlite3": "^4.1.0",
+    "moment": "^2.24.0"
   },
   "devDependencies": {
     "autod": "^3.0.1",
     "autod-egg": "^1.1.0",
     "egg-bin": "^4.11.0",
     "egg-ci": "^1.11.0",
-    "egg-mock": "^3.21.0",
-    "eslint": "^5.13.0",
-    "eslint-config-egg": "^7.1.0"
+    "egg-mock": "^3.21.0"
   },
   "engines": {
     "node": ">=10.0.0"

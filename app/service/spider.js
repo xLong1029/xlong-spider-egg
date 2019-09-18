@@ -5,6 +5,8 @@ const puppeteer = require('puppeteer');
 
 // 加密模块
 const crypto = require('crypto');
+// 时间处理
+const moment = require('moment');
 
 // 跳转等待时间
 const timeout = 50000;
@@ -45,23 +47,11 @@ class SpiderService extends Service {
                         break;
                     // 页面数据
                     case 3:
-                        const element = this.ctx.query.el;
-                        if(element && element != ''){
-                            res = await this.getPageData(web, element);
-                        }
-                        else{
-                            res = { code: 404 , msg: '缺少el参数'};
-                        }                        
+                        res = await this.getPageData(web);                    
                         break;
                     // 小说
                     case 4:
-                        const sectionEl = this.ctx.query.sectionEl;
-                        if(sectionEl && sectionEl != ''){
-                            res = await this.getNovelSection(web, sectionEl);
-                        }
-                        else{
-                            res = { code: 404 , msg: '缺少sectionEl参数'};
-                        }                        
+                        res = await this.getNovelSection(web);                       
                         break;
                     default:
                         res = { code: 404 , msg: 'type参数错误，请排查'};
@@ -73,6 +63,21 @@ class SpiderService extends Service {
         }
 
         return res;
+    }
+
+    /**
+     * 设置浏览器信息
+     * @param {*} page 页面实例
+     */
+    async setUA(page) {
+        const UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/63.0.3239.84 Chrome/63.0.3239.84 Safari/537.36";
+        return Promise.all([
+            page.setUserAgent(UA),
+            // 允许运行js
+            page.setJavaScriptEnabled(true),
+            // 设置页面视口的大小
+            page.setViewport({ width: 1920, height: 1080 }),
+        ]);
     }
 
     /**
@@ -113,6 +118,9 @@ class SpiderService extends Service {
      * @param {*} web 站点URL
      */
     async getScreenshot(web) {
+        // 返回内容
+        let res = RES_SERVICE_ERROR;
+
         // 创建一个浏览器实例 Browser 对象
         const browser = await puppeteer.launch({
             defaultViewport: { width: 1920, height: 1080 }, // 默认视图大小
@@ -133,8 +141,8 @@ class SpiderService extends Service {
         const request = await page.goto(web, { timeout, waitUntil }).then(() => true).catch(() => false);
 
         if(request){
-            const res = await this.pageAutoScroll(page);
-            if(res.code == 200){
+            const scrollRes = await this.pageAutoScroll(page);
+            if(scrollRes.code == 200){
                 // 获取页面标题
                 const title = await page.title();
                 const fileName = `${new Date().getTime() + crypto.createHash('md5').update(title).digest('hex')}.jpg`;
@@ -142,17 +150,21 @@ class SpiderService extends Service {
                 const dir = await this.ctx.service.store.getStoreDir('screenshot');        
                 await page.screenshot({ path: `${dir}/${fileName}`, fullPage: true });
 
-                // 关闭浏览器
-                await browser.close();
-
                 const data = await this.ctx.service.store.getFile(fileName, dir);
-                return { code: 200 , data, msg: '请求成功'};
+                res = { code: 200 , data, msg: '请求成功'};
             }
-            else return res;
+            else{
+                res = scrollRes;
+            }
         }
         else{
-            return RES_TIMEOUT; 
+            res = RES_TIMEOUT; 
         }
+
+        // 关闭浏览器
+        await browser.close();
+
+        return res;
     }
 
     /**
@@ -161,6 +173,9 @@ class SpiderService extends Service {
      * @param {*} web 站点URL
      */
     async getPDF(web) {
+        // 返回内容
+        let res = RES_SERVICE_ERROR;
+
         const browser = await puppeteer.launch();
 
         const page = await browser.newPage();
@@ -173,14 +188,52 @@ class SpiderService extends Service {
             const dir = await this.ctx.service.store.getStoreDir('pdf');        
             await page.pdf({ path: `${dir}/${fileName}`, printBackground: true, width: '1920' });
 
-            await browser.close();
-
             const data = await this.ctx.service.store.getFile(fileName, dir);
-            return { code: 200 , data, msg: '请求成功'}; 
+            res = { code: 200 , data, msg: '请求成功'}; 
         }
         else{
-            return RES_TIMEOUT; 
-        }               
+            res = RES_TIMEOUT; 
+        }
+
+        await browser.close();
+
+        return res;              
+    }
+
+    /**
+     * 获取页面数据
+     * @param {*} web 站点URL
+     */
+    async getPageData(web) {
+        const element = this.ctx.query.el;
+        if(!element || element == ''){
+            return { code: 404 , msg: '缺少el参数'};
+        }
+
+        // 返回内容
+        let res = RES_SERVICE_ERROR;
+
+        const browser = await puppeteer.launch();
+
+        const page = await browser.newPage();
+
+        // 设置浏览器信息
+        await this.setUA(page);
+
+        const request = await page.goto(web).then(() => true).catch(() => false);
+
+        if(request){
+            // 通过节点获取数据列表
+            const data = await this.getSectionList(page, element);
+            res = { code: 200 , data, msg: '请求成功'}; 
+        }
+        else{
+            res = RES_TIMEOUT; 
+        }
+
+        await browser.close();
+
+        return res;
     }
 
     /**
@@ -192,7 +245,7 @@ class SpiderService extends Service {
         return page.evaluate((element) => {
             const list = [...document.querySelectorAll(element)];
             return list.map(el => {
-                return { url: el.href.trim(), title: el.innerText };
+                return { url: el.href ? el.href.trim() : '', title: el.innerText ? el.innerText : '该节点元素无innerText属性' };
             })
         }, element);
     }
@@ -233,88 +286,59 @@ class SpiderService extends Service {
     }
 
     /**
-     * 获取页面数据
-     * @param {*} web 站点URL
-     * @param {*} element 节点字符串
-     */
-    async getPageData(web, element) {
-        const browser = await puppeteer.launch();
-
-        const page = await browser.newPage();
-
-        // 设置浏览器信息
-        const UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/63.0.3239.84 Chrome/63.0.3239.84 Safari/537.36";
-
-        await Promise.all([
-            page.setUserAgent(UA),
-            // 允许运行js
-            page.setJavaScriptEnabled(true),
-            // 设置页面视口的大小
-            page.setViewport({ width: 1920, height: 1080 }),
-        ]);
-
-        const request = await page.goto(web).then(() => true).catch(() => false);
-
-        
-
-        if(request){
-            // 通过节点获取数据列表
-            const data = await page.evaluate((element) => {
-                const list = [...document.querySelectorAll(element)];
-                return list.map(el => {
-                    return { url: el.href ? el.href.trim() : '', title: el.innerText ? el.innerText : '该节点元素无innerText属性' };
-                });
-            }, element);
-
-            // console.log(data);
-
-            await browser.close();
-
-            return { code: 200 , data, msg: '请求成功'}; 
-        }
-        else{
-            return RES_TIMEOUT; 
-        }
-    }
-
-    /**
      * 获取小说章节列表
      * @param {*} web 站点URL
-     * @param {*} sectionEl 节点字符串
      */
-    async getNovelSection(web, sectionEl) {
-        const browser = await puppeteer.launch();
+    async getNovelSection(web) {
+        const sectionEl = this.ctx.query.sectionEl;
+        if(!sectionEl || sectionEl == ''){
+            return { code: 404 , msg: '缺少sectionEl参数'};
+        }
 
+        // 返回内容
+        let res = RES_SERVICE_ERROR;
+
+        const browser = await puppeteer.launch();
+        
         const page = await browser.newPage();
 
         // 设置浏览器信息
-        const UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/63.0.3239.84 Chrome/63.0.3239.84 Safari/537.36";
-
-        await Promise.all([
-            page.setUserAgent(UA),
-            // 允许运行js
-            page.setJavaScriptEnabled(true),
-            // 设置页面视口的大小
-            page.setViewport({ width: 1920, height: 1080 }),
-        ]);
+        await this.setUA(page);
 
         const request = await page.goto(web).then(() => true).catch(() => false);
 
         if(request){
-            // 通过节点获取章节列表
-            const data = await this.getSectionList(page, sectionEl);
+            const title = await page.title();
 
-            // console.log('章节列表：', sectionList);
+            // 查询数据库是否已存在该记录，不存在则新增
+            let sqlQuery = `SELECT * FROM T_Novel WHERE title = '${title}' OR url = '${web}'`;
+            let sqlInsert = `INSERT INTO T_Novel (title, url, createTime) VALUES ('${title}', '${web}', '${moment().format('YYYY-MM-DD HH:mm:ss')}')`;
+            let query = await this.ctx.service.sqliteDB.GetRecord(sqlQuery, sqlInsert, 'T_Novel');
+            
+            if(query.code == 200){
+                const novelId = query.data[0].id;
+                const data = await this.getSectionList(page, sectionEl);
 
-            // const data = await this.getSectionText(sectionList, page);
+                // 将章节列表存入数据库
+                for(let el of data) {
+                    const sqlQuery = `SELECT * FROM T_Content WHERE parentId = ${novelId} AND sectionName = '${el.title}'`;
+                    const sqlInsert = `INSERT INTO T_Content (parentId, sectionName, url, createTime) VALUES (${novelId}, '${el.title}', '${el.url}', '${moment().format('YYYY-MM-DD HH:mm:ss')}')`;
+                    const query = await this.ctx.service.sqliteDB.GetRecord(sqlQuery, sqlInsert, 'T_Content');
+                    console.log(query);
+                }
 
-            // await browser.close();
-
-            return { code: 200 , data, msg: '请求成功'}; 
+                res =  { code: 200 , data, msg: '请求成功'}; 
+            }
+            else{
+                res = RES_SERVICE_ERROR; 
+            }
         }
         else{
-            return RES_TIMEOUT; 
+            res = RES_TIMEOUT; 
         }
+
+        await browser.close();
+        return res;
     }
 
 }

@@ -21,6 +21,9 @@ function getImgOrPdf(type){
         showAlertMsg('warning','请输入网址');
     }
     else{
+        console.log('开始获取数据');
+        showLoading('正在获取数据，请稍后...');
+        
         $.ajax({
             type:'GET',
             url: `/spider/${type}?web=${value}`,
@@ -130,8 +133,8 @@ function getNovelSection(){
     $seticonContent.hide();
     $sectionList.empty();
 
-    $contentCont.hide();
-    $contentList.empty();
+    // 隐藏内容节点
+    $getSectionCont.hide();
 
     var value = $inputNovel.val();
     var section = $sectionElement.val();
@@ -200,11 +203,14 @@ function getNovelContentBySection(){
     $contentCont.hide();
     $contentList.empty();
 
+    var value = $inputNovel.val();
+    var content = $contentElement.val();
+
     if(!value || value === ''){
         showAlertMsg('warning','请输入网址');
     }
-    else if(!section || section === ''){
-        showAlertMsg('warning','请输入章节节点');
+    else if(!content || content === ''){
+        showAlertMsg('warning','请输入内容节点');
     }
     else{
         console.log('开始获取数据');
@@ -212,7 +218,7 @@ function getNovelContentBySection(){
 
         $.ajax({
             type:'GET',
-            url: `/spider/4?web=${value}&sectionEl=${section}`,
+            url: `/spider/4?web=${value}&contentEl=${content}`,
             success: function(res) {
                console.log(res);
 
