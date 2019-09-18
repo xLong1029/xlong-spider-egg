@@ -254,8 +254,9 @@ class SpiderService extends Service {
      * 获取章节内容
      * @param {*} sectionList 章节列表
      * @param {*} page 页面实例
+     * @param {*} element 节点元素
      */
-    async getSectionText(sectionList, page){
+    async getSectionText(sectionList, page, element){
         // 通过章节获取内容
         for (let i = 0; i < sectionList.length; i ++) {
             const section = sectionList[i];
@@ -268,11 +269,12 @@ class SpiderService extends Service {
             }
 
             // 等章节内容加载完
-            await page.waitForSelector('.readAreaBox');
+            // await page.waitForSelector('.readAreaBox');
 
             // 获取章节内容
             const content = await page.evaluate(() => {
-                const list = [...document.querySelectorAll('.readAreaBox > .p p')];
+                // '.readAreaBox > .p p'
+                const list = [...document.querySelectorAll(element)];
 
                 let cot = '';
                 list.map(el => cot += `${el.innerText}<br/>`);
@@ -317,17 +319,17 @@ class SpiderService extends Service {
             
             if(query.code == 200){
                 const novelId = query.data[0].id;
-                const data = await this.getSectionList(page, sectionEl);
+                const list = await this.getSectionList(page, sectionEl);
 
                 // 将章节列表存入数据库
-                for(let el of data) {
+                for(let el of list) {
                     const sqlQuery = `SELECT * FROM T_Content WHERE parentId = ${novelId} AND sectionName = '${el.title}'`;
                     const sqlInsert = `INSERT INTO T_Content (parentId, sectionName, url, createTime) VALUES (${novelId}, '${el.title}', '${el.url}', '${moment().format('YYYY-MM-DD HH:mm:ss')}')`;
                     const query = await this.ctx.service.sqliteDB.GetRecord(sqlQuery, sqlInsert, 'T_Content');
                     console.log(query);
                 }
 
-                res =  { code: 200 , data, msg: '请求成功'}; 
+                res =  { code: 200 , data: list, msg: '请求成功'}; 
             }
             else{
                 res = RES_SERVICE_ERROR; 
