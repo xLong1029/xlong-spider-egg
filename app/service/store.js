@@ -9,7 +9,11 @@ const path = require('path');
 
 class StoreService extends Service {
 
-    // 读取路径信息 
+    /**
+     * 读取路径信息
+     * 判断路径是否存在，不存在返回false
+     * @param {*} path 路径地址
+     */
     async getStat(path) {
         return new Promise((resolve, reject) => {
             fs.stat(path, (err, stats) => {
@@ -19,7 +23,10 @@ class StoreService extends Service {
         })
     }
 
-    // 创建路径
+    /**
+     * 根据dir创建路径
+     * @param {*} dir 路径地址
+     */
     async mkdir(dir) {
         return new Promise((resolve, reject) => {
             fs.mkdir(dir, err => {
@@ -29,7 +36,10 @@ class StoreService extends Service {
         })
     }
 
-    // 路径是否存在，不存在则创建
+    /**
+     * 根据路径地址，判断路径是否存在，不存在则创建
+     * @param {*} dir 路径地址
+     */
     async dirExists(dir) {
         let isExists = await this.getStat(dir);
         // 如果该路径且不是文件，返回true
@@ -51,7 +61,10 @@ class StoreService extends Service {
         return mkdirStatus;
     }
 
-    // 获取文件存储路径
+    /**
+     * 根据配置的dir返回文件存储路径
+     * @param {*} dir 路径地址
+     */
     async getStoreDir(dir) {
         if (dir) {
             await this.dirExists(`app/public/upload/${dir}`);
@@ -60,8 +73,11 @@ class StoreService extends Service {
             return 'app/public/upload';
         }
     }
-
-    // 查找文件是否存在
+ 
+    /**
+     * 根据路径地址，判断文件是否存在
+     * @param {*} dir 路径地址
+     */
     async fileExists(dir) {
         return new Promise((resolve, reject) => {
             // 判断文件是否存在
@@ -72,7 +88,11 @@ class StoreService extends Service {
         });
     }
 
-    // 获取文件路径
+    /**
+     * 返回文件存储路径
+     * @param {*} fileName 文件名
+     * @param {*} dir 路径地址
+     */
     async getFile(fileName, dir) {
         if(!fileName || !dir) return null;
 
