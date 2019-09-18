@@ -7,56 +7,69 @@ const puppeteer = require('puppeteer');
 const crypto = require('crypto');
 
 // 跳转等待时间
-const timeout = 20000;
+const timeout = 50000;
 // 文档加载完才跳转页面
 const waitUntil = 'domcontentloaded';
+
+// 网站地址正则表达式
+const regWebsite = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?/;
 
 // 请求超时返回值
 const RES_TIMEOUT = { code: 408 , msg: '请求超时，请重试'};
 const RES_ACCESS_DENIED = { code: 404 , msg: '请求失败，无法访问该页面'};
+const RES_SERVICE_ERROR = { code: 500 , msg: '服务器出错'};
 
 class SpiderService extends Service {
     /**
      * 获取数据
-     * @param {*} type 1获取截图，2获取pdf文件，3获取页面数据
+     * @param {*} type 1.获取截图，2.获取pdf，3.获取页面数据，4.获取小说资源
      */
     async getData(type) {
-        let res = {
-            code: 500,
-            data: null,
-            msg: '服务器出错'
-        };
+        let res = RES_SERVICE_ERROR;
 
         // 获取参数
         const web = this.ctx.query.web;
 
-        // 网站地址正则表达式
-        const regWebsite = /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?/;
-        // console.log(`传递的参数web:${web}`);
-
         if (web && web != '') {
             if (!regWebsite.test(web)) {
-                res.code = 404;
-                res.msg = '网站格式不正确，请重新输入';
+                res = { code: 404 , msg: '网站格式不正确，请重新输入'};
             } else {
                 switch (type) {
+                    // 截图
                     case 1:
                         res = await this.getScreenshot(web);
                         break;
+                    // PDF
                     case 2:
                         res = await this.getPDF(web);
                         break;
+                    // 页面数据
                     case 3:
-                        res = await this.getInfo(web);
+                        const element = this.ctx.query.el;
+                        if(element && element != ''){
+                            res = await this.getPageData(web, element);
+                        }
+                        else{
+                            res = { code: 404 , msg: '缺少el参数'};
+                        }                        
+                        break;
+                    // 小说
+                    case 4:
+                        const sectionEl = this.ctx.query.sectionEl;
+                        if(sectionEl && sectionEl != ''){
+                            res = await this.getNovelSection(web, sectionEl);
+                        }
+                        else{
+                            res = { code: 404 , msg: '缺少sectionEl参数'};
+                        }                        
                         break;
                     default:
                         res = { code: 404 , msg: 'type参数错误，请排查'};
                 }
-
             }
-        } else {
-            res.code = 404;
-            res.msg = '缺少参数';
+        }
+        else {
+            res = { code: 404 , msg: '缺少web参数'};
         }
 
         return res;
@@ -173,14 +186,15 @@ class SpiderService extends Service {
     /**
      * 获取章节列表
      * @param {*} page 页面实例
+     * @param {*} element 节点元素
      */
-    async getSectionList(page){
-        return page.evaluate(() => {
-            const list = [...document.querySelectorAll('.Volume > dd a')];
+    async getSectionList(page, element){
+        return page.evaluate((element) => {
+            const list = [...document.querySelectorAll(element)];
             return list.map(el => {
                 return { url: el.href.trim(), title: el.innerText };
             })
-        })
+        }, element);
     }
 
     /**
@@ -219,11 +233,56 @@ class SpiderService extends Service {
     }
 
     /**
-     * 获取信息
-     * 这里需要根据个人对抓取的数据需求进行节点分析和代码修改
+     * 获取页面数据
      * @param {*} web 站点URL
+     * @param {*} element 节点字符串
      */
-    async getInfo(web) {
+    async getPageData(web, element) {
+        const browser = await puppeteer.launch();
+
+        const page = await browser.newPage();
+
+        // 设置浏览器信息
+        const UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/63.0.3239.84 Chrome/63.0.3239.84 Safari/537.36";
+
+        await Promise.all([
+            page.setUserAgent(UA),
+            // 允许运行js
+            page.setJavaScriptEnabled(true),
+            // 设置页面视口的大小
+            page.setViewport({ width: 1920, height: 1080 }),
+        ]);
+
+        const request = await page.goto(web).then(() => true).catch(() => false);
+
+        
+
+        if(request){
+            // 通过节点获取数据列表
+            const data = await page.evaluate((element) => {
+                const list = [...document.querySelectorAll(element)];
+                return list.map(el => {
+                    return { url: el.href ? el.href.trim() : '', title: el.innerText ? el.innerText : '该节点元素无innerText属性' };
+                });
+            }, element);
+
+            // console.log(data);
+
+            await browser.close();
+
+            return { code: 200 , data, msg: '请求成功'}; 
+        }
+        else{
+            return RES_TIMEOUT; 
+        }
+    }
+
+    /**
+     * 获取小说章节列表
+     * @param {*} web 站点URL
+     * @param {*} sectionEl 节点字符串
+     */
+    async getNovelSection(web, sectionEl) {
         const browser = await puppeteer.launch();
 
         const page = await browser.newPage();
@@ -243,13 +302,13 @@ class SpiderService extends Service {
 
         if(request){
             // 通过节点获取章节列表
-            const sectionList = await this.getSectionList(page);
+            const data = await this.getSectionList(page, sectionEl);
 
             // console.log('章节列表：', sectionList);
 
-            const data = await this.getSectionText(sectionList, page);
+            // const data = await this.getSectionText(sectionList, page);
 
-            await browser.close();
+            // await browser.close();
 
             return { code: 200 , data, msg: '请求成功'}; 
         }

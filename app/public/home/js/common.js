@@ -8,7 +8,7 @@
 var $alert = $('#alert');
 var $loading = $('#loading');
 
-// 设置默认图片
+// 显示弹窗
 function showAlertMsg(type, msg){
     $alert.attr('class', `message message-show message--${type}`);
     $alert.find('.message__content').text(msg);
@@ -19,13 +19,13 @@ function showAlertMsg(type, msg){
     }, 1500);
 }
 
-// 设置默认图片
+// 显示Loading
 function showLoading(msg){
     $loading.find('.loading-spinner__text').text(msg);
     $loading.fadeIn();
 }
 
-// 设置默认图片
+// 隐藏Loading
 function hideLoading(){
     $loading.find('.loading-spinner__text').text('');
     $loading.fadeOut();

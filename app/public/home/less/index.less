@@ -11,19 +11,31 @@
     background: #fff;
 }
 
-.hint{
+.title{
+    color: @base_color;
+    font-size: 18px;
+    text-align: center;
+    font-weight: bold;
+    .padding(10, 10);
     .mb(10);
-    color: #F56C6C;
+}
+
+.hint{
+    background: #F56C6C;
+    color: #fff;
+    .padding(5, 10);
+    .border_radius(4);
+    .mb(14);
 }
 
 .data{
     .padding(20, 50);
-
+    background: #f8f8f8;
     display: none;        
 
-    &-hint{
-        color: @base_color;
-    }
+    // &-hint{
+    //     color: @base_color;
+    // }
 }
 
 .section-list{
