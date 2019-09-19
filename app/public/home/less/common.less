@@ -157,7 +157,8 @@ img {
     bottom: 0;
     left: 0;
     width: 100%;
-    background: #fafafa;
+    background: #fff;
+    border-top: @base_border;
 
     .copyright{
         text-align: center;
@@ -251,6 +252,10 @@ img {
             .wd(80);
             .mr(10);
         }
+
+        // &:last-child{
+        //     .mb(0);
+        // }
     }
 }
 
@@ -277,6 +282,7 @@ img {
     .border_radius(4);
 
     outline: none;
+    display: inline-block;
     cursor: pointer;   
     border: 1px solid #d9d9d9;
     background: #fff;
@@ -387,6 +393,7 @@ img {
         bottom: 0;
         left: 0;
         transition: opacity 0.3s;
+        height: 100%;
     }
 
     &-spinner {

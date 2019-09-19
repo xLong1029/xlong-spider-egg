@@ -5,9 +5,49 @@
 {% endblock %} {% block content %}
 
 <div class="container">
-  <!-- <div class="index-content">
-      <div class="title">获取页面全屏截图</div>
+  <div class="index-content">
+    <div class="index-content__title">获取小说资源</div>
+    <div class="index-content__cont">
+      <!-- 以https://www.17k.com/list/3034368.html为例测试 -->
       <div class="form">
+          <div class="form-inline">
+            <label class="form-inline__label">网址：</label>
+            <input id="inputNovel" class="input form-inline__input" style="width:80%;" type="text" value="" placeholder="请输入网址" />
+          </div>
+          <div class="form-inline">
+            <label class="form-inline__label">章节节点：</label>
+            <input id="sectionElement" class="input form-inline__input" style="width:80%;" type="text" value="" placeholder="例如：.list > li a[target]" />
+          </div>
+          <div class="form-inline">
+            <label class="form-inline__label"></label>
+            <button class="button primary" onclick="getNovelSection()"> 获取章节列表 </button>
+          </div>
+          <div id="getSectionCont" style="display: none;">
+            <div class="form-inline">
+              <label class="form-inline__label">内容节点：</label>
+              <input id="contentElement" class="input form-inline__input" style="width:80%;" type="text" value="" placeholder="例如：.content p" />
+            </div>
+            <div class="form-inline">
+              <label class="form-inline__label"></label>
+              <button class="button primary" onclick="getNovelContentBySection()">获取章节内容</button>
+            </div>
+          </div>
+        </div>
+        <div id="seticonContent" class="data">
+          <div class="data-hint mb-md">所有章节列表已获取完成，列表如下：</div>
+          <ul id="sectionList" class="section-list"></ul>
+        </div>
+        <div id="contentCont" class="data">
+          <div class="data-hint mb-md">所有章节内容已获取完成，可点击下方按钮进行下载：</div>
+          <a id="download" class="button primary" href="" download="">
+            下载TXT
+          </a>
+      </div>
+    </div>
+  </div>
+  <div class="index-content">
+      <div class="index-content__title">获取页面全屏截图</div>
+      <div class="index-content__cont form">
           <div class="form-inline">
               <label class="form-inline__label">网址：</label>
               <input id="inputImg" class="input form-inline__input" style="width:80%;" type="text" value="" placeholder="请输入网址"/>
@@ -20,89 +60,46 @@
       </div>            
   </div>
   <div class="index-content">
-      <div class="title">获取页面PDF</div>
-      <div class="hint">温馨提示：有些网页获取后会缺少部分样式（字体或者颜色等），而且请求超时问题比较严重</div>
-      <div class="form">
-          <div class="form-inline">
-              <label class="form-inline__label">网址：</label>
-              <input id="inputPdf" class="input form-inline__input" style="width:80%;" type="text" value="" placeholder="请输入网址"/>
-          </div>
-          <div class="form-inline">
-              <label class="form-inline__label"></label>
-              <button class="button primary" onclick="getImgOrPdf(2)">获取PDF</button>
-              <button class="button defult ml-sm" onclick="reset($('#inputPdf'))">重置</button>
+      <div class="index-content__title">获取页面PDF</div>
+      <div class="index-content__cont">
+          <div class="hint">温馨提示：有些网页获取后会缺少部分样式（字体或者颜色等），而且请求超时问题比较严重</div>
+          <div class="form">
+              <div class="form-inline">
+                  <label class="form-inline__label">网址：</label>
+                  <input id="inputPdf" class="input form-inline__input" style="width:80%;" type="text" value="" placeholder="请输入网址"/>
+              </div>
+              <div class="form-inline">
+                  <label class="form-inline__label"></label>
+                  <button class="button primary" onclick="getImgOrPdf(2)">获取PDF</button>
+                  <button class="button defult ml-sm" onclick="reset($('#inputPdf'))">重置</button>
+              </div>
           </div>
       </div>
   </div>
   <div class="index-content">
-      <div class="title">获取页面数据</div>
-      <div class="form">
-          <div class="form-inline">
-              <label class="form-inline__label">网址：</label>
-              <input id="inputData" class="input form-inline__input" style="width:80%;" type="text" value="" placeholder="请输入网址"/>
+      <div class="index-content__title">获取页面数据</div>
+      <div class="index-content__cont">
+          <div class="form">
+              <div class="form-inline">
+                  <label class="form-inline__label">网址：</label>
+                  <input id="inputData" class="input form-inline__input" style="width:80%;" type="text" value="" placeholder="请输入网址"/>
+              </div>
+              <div class="form-inline">
+                  <label class="form-inline__label">爬取节点：</label>
+                  <input id="inputElement" class="input form-inline__input" style="width:80%;" type="text" value="" placeholder="例如：.list > li a[target]"/>
+              </div>
+              <div class="form-inline">
+                  <label class="form-inline__label"></label>
+                  <button class="button primary" onclick="getPageData()">获取数据</button>
+                  <button class="button defult ml-sm" onclick="resetPageData()">重置</button>
+              </div>
           </div>
-          <div class="form-inline">
-              <label class="form-inline__label">爬取节点：</label>
-              <input id="inputElement" class="input form-inline__input" style="width:80%;" type="text" value="" placeholder="例如：.list > li a[target]"/>
-          </div>
-          <div class="form-inline">
-              <label class="form-inline__label"></label>
-              <button class="button primary" onclick="getPageData()">获取数据</button>
-              <button class="button defult ml-sm" onclick="resetPageData()">重置</button>
+          <div id="dataContent" class="data">
+              <div class="data-hint">获取到的数据如下：</div>
+              <ul id="dataList" class="section-list">
+              </ul>
           </div>
       </div>
-      <div id="dataContent" class="data">
-          <div class="data-hint">获取到的数据如下：</div>
-          <ul id="dataList" class="section-list">
-          </ul>
-      </div>
-  </div> -->
-  <div class="index-content">
-    <!-- <div class="title">获取小说资源</div> -->
-    <!-- 以https://www.17k.com/list/3034368.html为例测试 -->
-    <div class="form">
-      <div class="form-inline">
-        <label class="form-inline__label">网址：</label>
-        <input id="inputNovel" class="input form-inline__input" style="width:80%;" type="text" value="" placeholder="请输入网址" />
-      </div>
-      <div class="form-inline">
-        <label class="form-inline__label">章节节点：</label>
-        <input id="sectionElement" class="input form-inline__input" style="width:80%;" type="text" value="" placeholder="例如：.list > li a[target]" />
-      </div>
-      <div class="form-inline">
-        <label class="form-inline__label"></label>
-        <button class="button primary" onclick="getNovelSection()"> 获取章节列表 </button>
-      </div>
-      <div id="getSectionCont" style="display: none;">
-        <div class="form-inline">
-          <label class="form-inline__label">内容节点：</label>
-          <input id="contentElement" class="input form-inline__input" style="width:80%;" type="text" value="" placeholder="例如：.content p" />
-        </div>
-        <!-- <div class="form-inline">
-          <label class="form-inline__label">选取章节：</label>
-          第
-          <input id="setcionStart" class="input form-inline__input mr-sm ml-sm" type="text" value="" placeholder="例如：1" />
-          章至第
-          <input id="setcionEnd" class="input form-inline__input mr-sm ml-sm" type="text" value="" placeholder="例如：5" />
-          章
-        </div> -->
-        <div class="form-inline">
-          <label class="form-inline__label"></label>
-          <button class="button primary" onclick="getNovelContentBySection()">获取章节内容</button>
-        </div>
-      </div>
-    </div>
-    <div id="seticonContent" class="data">
-      <div class="data-hint mb-md">获取到的章节列表如下：</div>
-      <ul id="sectionList" class="section-list"></ul>
-    </div>
-    <div id="contentCont" class="data">
-      <button class="button primary mb-md" onclick="download()">
-        下载TXT
-      </button>
-      <div class="data-hint mb-md">获取到的章节内容如下：</div>
-      <div id="contentList" class="content-list"></div>
-    </div>
   </div>
 </div>
 {% endblock %} {% block script %}

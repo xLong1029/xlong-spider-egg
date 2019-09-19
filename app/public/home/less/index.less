@@ -4,27 +4,32 @@
 
 
 .index-content{
-    .margin(10, 0);
-    .padding(15, 15);
+    .margin(20, 0);
 
     width: 100%;    
     background: #fff;
-}
+    border-bottom: @base_border;
 
-.title{
-    color: @base_color;
-    font-size: 18px;
-    text-align: center;
-    font-weight: bold;
-    .padding(10, 10);
-    .mb(10);
+    &__title{
+        color: @base_color;
+        font-size: 16px;
+        text-align: center;
+        // font-weight: bold;
+        border-bottom: @base_border;
+        .padding(15, 15);
+        // .mb(10);
+    }
+
+    &__cont{
+        .padding(15, 15);
+    }
 }
 
 .hint{
-    background: #F56C6C;
-    color: #fff;
-    .padding(5, 10);
-    .border_radius(4);
+    // background: #F56C6C;
+    color: #F56C6C;
+    // .padding(5, 10);
+    // .border_radius(4);
     .mb(14);
 }
 

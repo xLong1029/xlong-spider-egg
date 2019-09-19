@@ -173,6 +173,8 @@ function getNovelSection(){
                         showAlertMsg('success','数据获取成功');
                     }
                     else{
+                        $seticonContent.hide();
+                        $getSectionCont.hide();
                         showAlertMsg('warning','数据为空，请检查获取的数据网址是否正确');
                     }                    
                 }
@@ -190,18 +192,14 @@ function getNovelSection(){
 
 var $contentElement = $('#contentElement');
 
-var $setcionStart = $('#setcionStart');
-var $setcionEnd = $('#setcionEnd');
-
 var $contentCont = $('#contentCont');
-var $contentList = $('#contentList');
+var $downloadBtn = $('#download');
 
 // 获取通过章节获取小说内容
 function getNovelContentBySection(){
     $seticonContent.hide();
 
     $contentCont.hide();
-    $contentList.empty();
 
     var value = $inputNovel.val();
     var content = $contentElement.val();
@@ -226,18 +224,14 @@ function getNovelContentBySection(){
                     console.log('数据获取结束');
                     hideLoading();
 
-                    if(res.data){
+                    if(res.data.url){
                         $contentCont.show();
-                        var content = '';                                        
-                        res.data.forEach(el => {
-                            content += `<p>${el}</p>`;
-                        });
-                        $contentList.append(content);
-                        // $contentList.append(res.data);
+                        $downloadBtn.attr('href', res.data.url);
 
                         showAlertMsg('success','数据获取成功');
                     }
                     else{
+                        $contentCont.hide();
                         showAlertMsg('warning','数据为空，请检查获取的数据网址是否正确');
                     }                    
                 }
@@ -251,9 +245,4 @@ function getNovelContentBySection(){
             }
         });
     }
-}
-
-// 下载资源
-function download(){
-
 }

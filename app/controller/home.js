@@ -13,17 +13,11 @@ class HomeController extends Controller {
     await this.ctx.render('index.html', data);
   }
 
-  // 获取数据
+  // 爬取数据
   async spider() {
     const type = parseInt(this.ctx.params.type);
     this.ctx.body = await this.ctx.service.spider.getData(type);
   }
-
-  // 获取小说内容数据
-  // async spider() {
-  //   const type = parseInt(this.ctx.params.type);
-  //   this.ctx.body = await this.ctx.service.spider.getData(type);
-  // }
 }
 
 module.exports = HomeController;

@@ -15,10 +15,9 @@ class StoreService extends Service {
      * @param {*} path 路径地址
      */
     async getStat(path) {
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
             fs.stat(path, (err, stats) => {
-                if (err) resolve(false);
-                else resolve(stats);
+                err ? resolve(false) : resolve(stats);
             })
         })
     }
@@ -28,10 +27,9 @@ class StoreService extends Service {
      * @param {*} dir 路径地址
      */
     async mkdir(dir) {
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
             fs.mkdir(dir, err => {
-                if (err) resolve(false);
-                else resolve(true);
+                err ? resolve(false) : resolve(true);
             })
         })
     }
@@ -79,33 +77,50 @@ class StoreService extends Service {
      * @param {*} dir 路径地址
      */
     async fileExists(dir) {
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
             // 判断文件是否存在
-            fs.exists(dir, (exists) => {
-                if(exists) resolve(true);
-                else reject(false);
+            fs.exists(dir, exists => {
+                exists ? resolve(true) : resolve(false);
             });
         });
     }
 
     /**
      * 返回文件存储路径
-     * @param {*} fileName 文件名
+     * @param {*} file 文件名(包含后缀名)
      * @param {*} dir 路径地址
      */
-    async getFile(fileName, dir) {
-        if(!fileName || !dir) return null;
+    async getFile(file, dir) {
+        if(!file || !dir) return null;
 
         // 找到存放的位置
-        const target = path.join(this.config.baseDir, `${dir}/`, fileName);
+        const target = path.join(this.config.baseDir, `${dir}/`, file);
         const isExists = await this.fileExists(target);
 
         // 文件存在则返回文件路径
         if(isExists){
             // 只取public/upload/xxx路径
-            return `${dir.substring(4,dir.length)}/${fileName}`;
+            return `${dir.substring(4,dir.length)}/${file}`;
         }
         else return null;
+    }
+
+    /**
+     * 存储为txt文件，并返回文件存储路径
+     * @param {*} file 文件(包含后缀名)
+     * @param {*} content 文本内容
+     */
+    async saveToTxt(file, content){
+        if(!file || !content) return null;
+
+        const dir = await this.getStoreDir('txt');
+
+        return new Promise((resolve, reject) => {
+            // 写入文件
+            fs.writeFile(`${dir}/${file}`, content, err => {
+                err ? reject(err) : resolve(`${dir.substring(4,dir.length)}/${file}`);    
+            });
+        });
     }
 }
 

@@ -3,6 +3,9 @@
 const Service = require('egg').Service;
 const puppeteer = require('puppeteer');
 
+// 路径操作对象
+const path = require('path');
+
 // 加密模块
 const crypto = require('crypto');
 // 时间处理
@@ -149,12 +152,12 @@ class SpiderService extends Service {
             if(scrollRes.code == 200){
                 // 获取页面标题
                 const title = await page.title();
-                const fileName = `${new Date().getTime() + crypto.createHash('md5').update(title).digest('hex')}.jpg`;
+                const file = `${new Date().getTime() + crypto.createHash('md5').update(title).digest('hex')}.jpg`;
                 // 对页面进行截图并保存
                 const dir = await this.ctx.service.store.getStoreDir('screenshot');        
-                await page.screenshot({ path: `${dir}/${fileName}`, fullPage: true });
+                await page.screenshot({ path: `${dir}/${file}`, fullPage: true });
 
-                const data = await this.ctx.service.store.getFile(fileName, dir);
+                const data = await this.ctx.service.store.getFile(file, dir);
                 res = { code: 200 , data, msg: '请求成功'};
             }
             else{
@@ -187,12 +190,12 @@ class SpiderService extends Service {
 
         if(request){
             const title = await page.title();
-            const fileName = `${new Date().getTime() + crypto.createHash('md5').update(title).digest('hex')}.pdf`;
+            const file = `${new Date().getTime() + crypto.createHash('md5').update(title).digest('hex')}.pdf`;
 
             const dir = await this.ctx.service.store.getStoreDir('pdf');        
-            await page.pdf({ path: `${dir}/${fileName}`, printBackground: true, width: '1920' });
+            await page.pdf({ path: `${dir}/${file}`, printBackground: true, width: '1920' });
 
-            const data = await this.ctx.service.store.getFile(fileName, dir);
+            const data = await this.ctx.service.store.getFile(file, dir);
             res = { code: 200 , data, msg: '请求成功'}; 
         }
         else{
@@ -249,7 +252,7 @@ class SpiderService extends Service {
         return page.evaluate((element) => {
             const list = [...document.querySelectorAll(element)];
             return list.map(el => {
-                return { url: el.href ? el.href.trim() : '', title: el.innerText ? el.innerText : '该节点元素无innerText属性' };
+                return { url: el.href ? el.href.trim() : null, title: el.innerText ? el.innerText : '该节点元素无innerText属性' };
             })
         }, element);
     }
@@ -327,18 +330,19 @@ class SpiderService extends Service {
 
         if(query.code == 200 && query.data.length > 0){
             if(query.data[0].content && query.data[0].content != ''){
-                return query.data[0].content;
+                // txt文本中，换行符使用：\r回车 \n换行
+                // window中用 \r\n 
+                // Linux中用 \n 
+                // Mac中用 \r 
+                return `${section.sectionTitle}\r\n\r\n${query.data[0].content}\r\n`;
             }
             else{
-                console.log(222, query);
                 const browser = await puppeteer.launch();
             
                 const page = await browser.newPage();
 
                 // 设置浏览器信息
                 await this.setUA(page);
-
-                console.log(section.url);
 
                 // 跳转到网址
                 const respond = await page.goto(section.url, { timeout, waitUntil }).catch(err => console.log(err));
@@ -366,8 +370,8 @@ class SpiderService extends Service {
                 // 更新内容
                 sqlQuery = `UPDATE T_Content SET content = '${content}' WHERE parentId = ${novelId} AND sectionNo = ${section.sectionNo};`
                 query = await this.ctx.service.sqliteDB.SQLiteQuery(sqlQuery);
-
-                return `${section.sectionTitle}\n\n${content}\n`;
+               
+                return `${section.sectionTitle}\r\n\r\n${content}\r\n`;
             }
         }
         else return false;
@@ -386,45 +390,56 @@ class SpiderService extends Service {
         // 返回内容
         let res = RES_SERVICE_ERROR;
 
-        const title = '';
-
         // 查询数据库是否已存在该小说
-        let sqlQuery = `SELECT * FROM T_Novel WHERE title = '${title}' OR url = '${web}'`;
+        let sqlQuery = `SELECT * FROM T_Novel WHERE url = '${web}'`;
         let query = await this.ctx.service.sqliteDB.SQLiteQuery(sqlQuery);
         
         if(query.code == 200){
             if(query.data.length > 0){
                 // 记录小说ID
                 const novelId = query.data[0].id;
+                const title = query.data[0].title;
 
-                // 从数据库获取小说章节
-                sqlQuery = `SELECT * FROM T_Content WHERE parentId = ${novelId}`;
-                query = await this.ctx.service.sqliteDB.SQLiteQuery(sqlQuery);
+                // 查找是否已有此文件
+                const dir = await this.ctx.service.store.getStoreDir('txt');
+                const target = path.join(this.config.baseDir, `${dir}/`, `${title}.txt`);
+                const isExists = await this.ctx.service.store.fileExists(target);
 
-                console.log(query);
-
-                let data = [];
-
-                if(query.code == 200){
-                    const sectionList = query.data;
-
-                    // const content = await this.getOneSectionContent(sectionList[0], contentEl, novelId);
-                    // console.log(content);
-
-                    // 通过章节获取内容
-                    for(let section of sectionList){
-                        const content = await this.getOneSectionContent(section, contentEl, novelId);
-                        if(content){
-                            data.push(content);
-                        }
-                        else{
-                            return RES_ACCESS_DENIED;
-                        }
-                    }
-                    res =  { code: 200 , data, msg: '请求成功'}; 
+                // 文件存在则返回文件路径
+                if(isExists){
+                    // 只取public/upload/xxx路径
+                    res =  { code: 200 , data: { list: [], url: `${dir.substring(4,dir.length)}/${title}.txt` }, msg: '请求成功，返回已存在的文件'}; 
                 }
-                else{
-                    res = RES_SERVICE_ERROR; 
+                else {
+                    // 从数据库获取小说章节
+                    sqlQuery = `SELECT * FROM T_Content WHERE parentId = ${novelId}`;
+                    query = await this.ctx.service.sqliteDB.SQLiteQuery(sqlQuery);
+            
+                    if(query.code == 200){
+                        const sectionList = query.data;
+
+                        let list = [];
+                        let text = '';
+
+                        // 通过章节获取内容
+                        for(let section of sectionList){
+                            const content = await this.getOneSectionContent(section, contentEl, novelId);
+                            if(content){
+                                list.push(content);
+                                text += content;
+                            }
+                            else{
+                                return RES_ACCESS_DENIED;
+                            }
+                        }
+                        // 获取下载地址
+                        const url = await this.ctx.service.store.saveToTxt(`${title}.txt`, text);
+                        
+                        res =  { code: 200 , data: { list, url }, msg: '请求成功'}; 
+                    }
+                    else{
+                        res = RES_SERVICE_ERROR; 
+                    }
                 }                
             }
             else{
@@ -436,6 +451,8 @@ class SpiderService extends Service {
         }
         return res;
     }
+
+    
 }
 
 module.exports = SpiderService;

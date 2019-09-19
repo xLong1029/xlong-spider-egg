@@ -21,6 +21,7 @@ function showAlertMsg(type, msg){
 
 // 显示Loading
 function showLoading(msg){
+    $loading.height($(document.body).height());
     $loading.find('.loading-spinner__text').text(msg);
     $loading.fadeIn();
 }
