@@ -57,7 +57,7 @@ class SqliteDB_Service extends Service {
         return new Promise((resolve, reject) => {
             this.SQLiteQuery(sql).then(() => {
                 // 插入成功并返回该记录
-                this.SQLiteQuery(`select * from ${tableName} where rowid = last_insert_rowid()`).then(res => resolve(res)).catch(err => reject(err));
+                this.SQLiteQuery(`SELECT * FROM ${tableName} WHERE rowid = last_insert_rowid()`).then(res => resolve(res)).catch(err => reject(err));
             }).catch(err => reject(err));
         });
     }

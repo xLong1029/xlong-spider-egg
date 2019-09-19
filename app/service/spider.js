@@ -49,9 +49,13 @@ class SpiderService extends Service {
                     case 3:
                         res = await this.getPageData(web);                    
                         break;
-                    // 小说
+                    // 小说章节
                     case 4:
                         res = await this.getNovelSection(web);                       
+                        break;
+                    // 小说内容
+                    case 5:
+                        res = await this.getNovelContent(web);                       
                         break;
                     default:
                         res = { code: 404 , msg: 'type参数错误，请排查'};
@@ -237,7 +241,7 @@ class SpiderService extends Service {
     }
 
     /**
-     * 获取章节列表
+     * 通过浏览器获取章节列表
      * @param {*} page 页面实例
      * @param {*} element 节点元素
      */
@@ -248,43 +252,6 @@ class SpiderService extends Service {
                 return { url: el.href ? el.href.trim() : '', title: el.innerText ? el.innerText : '该节点元素无innerText属性' };
             })
         }, element);
-    }
-
-    /**
-     * 获取章节内容
-     * @param {*} sectionList 章节列表
-     * @param {*} page 页面实例
-     * @param {*} element 节点元素
-     */
-    async getSectionText(sectionList, page, element){
-        // 通过章节获取内容
-        for (let i = 0; i < sectionList.length; i ++) {
-            const section = sectionList[i];
-
-            // 跳转到网址
-            const respond = await page.goto(section.url, { timeout, waitUntil }).catch(err => console.log(err));
-            if (!respond) {   
-                browser.close();
-                return RES_ACCESS_DENIED;
-            }
-
-            // 等章节内容加载完
-            // await page.waitForSelector('.readAreaBox');
-
-            // 获取章节内容
-            const content = await page.evaluate(() => {
-                // '.readAreaBox > .p p'
-                const list = [...document.querySelectorAll(element)];
-
-                let cot = '';
-                list.map(el => cot += `${el.innerText}<br/>`);
-
-                return cot;
-            })
-
-            data.push(`<h4>${section.title}</h4><br/>${content}<br/>`);
-        }
-        return data;
     }
 
     /**
@@ -321,12 +288,15 @@ class SpiderService extends Service {
                 const novelId = query.data[0].id;
                 const list = await this.getSectionList(page, sectionEl);
 
+                // 章节序号
+                let sectionNo = 1;
                 // 将章节列表存入数据库
                 for(let el of list) {
-                    const sqlQuery = `SELECT * FROM T_Content WHERE parentId = ${novelId} AND sectionName = '${el.title}'`;
-                    const sqlInsert = `INSERT INTO T_Content (parentId, sectionName, url, createTime) VALUES (${novelId}, '${el.title}', '${el.url}', '${moment().format('YYYY-MM-DD HH:mm:ss')}')`;
-                    const query = await this.ctx.service.sqliteDB.GetRecord(sqlQuery, sqlInsert, 'T_Content');
-                    console.log(query);
+                    const sqlQuery = `SELECT * FROM T_Content WHERE parentId = ${novelId} AND sectionTitle = '${el.title}' AND sectionNo = ${sectionNo}`;
+                    const sqlInsert = `INSERT INTO T_Content (parentId, sectionTitle, sectionNo, url, createTime) VALUES (${novelId}, '${el.title}', ${sectionNo}, '${el.url}', '${moment().format('YYYY-MM-DD HH:mm:ss')}')`;
+                    await this.ctx.service.sqliteDB.GetRecord(sqlQuery, sqlInsert, 'T_Content');
+
+                    sectionNo ++;
                 }
 
                 res =  { code: 200 , data: list, msg: '请求成功'}; 
@@ -343,6 +313,129 @@ class SpiderService extends Service {
         return res;
     }
 
+    /**
+     * 获取单一章节内容
+     * @param {*} section 章节
+     * @param {*} element 节点元素
+     * @param {*} novelId 小说ID
+     */
+    async getOneSectionContent(section, element, novelId){
+
+        // 判断章节是否包含内容
+        let sqlQuery = `SELECT * FROM T_Content WHERE parentId = ${novelId} AND sectionNo = ${section.sectionNo}`;
+        let query = await this.ctx.service.sqliteDB.SQLiteQuery(sqlQuery);
+
+        if(query.code == 200 && query.data.length > 0){
+            if(query.data[0].content && query.data[0].content != ''){
+                return query.data[0].content;
+            }
+            else{
+                console.log(222, query);
+                const browser = await puppeteer.launch();
+            
+                const page = await browser.newPage();
+
+                // 设置浏览器信息
+                await this.setUA(page);
+
+                console.log(section.url);
+
+                // 跳转到网址
+                const respond = await page.goto(section.url, { timeout, waitUntil }).catch(err => console.log(err));
+                if (!respond) {   
+                    browser.close();
+                    return false;
+                }
+
+                // 等章节内容加载完
+                // await page.waitForSelector('.readAreaBox');
+
+                // 获取章节内容
+                const content = await page.evaluate((element) => {
+                    // '.readAreaBox > .p p:not([.copy])'
+                    const list = [...document.querySelectorAll(element)];
+
+                    let cot = '';
+                    list.map(el => cot += `${el.innerText}\n`);
+
+                    return cot;
+                }, element);
+
+                browser.close();
+
+                // 更新内容
+                sqlQuery = `UPDATE T_Content SET content = '${content}' WHERE parentId = ${novelId} AND sectionNo = ${section.sectionNo};`
+                query = await this.ctx.service.sqliteDB.SQLiteQuery(sqlQuery);
+
+                return `${section.sectionTitle}\n\n${content}\n`;
+            }
+        }
+        else return false;
+    }
+
+    /**
+     * 获取小说章节内容
+     * @param {*} web 站点URL
+     */
+    async getNovelContent(web) {
+        const contentEl = this.ctx.query.contentEl;
+        if(!contentEl || contentEl == ''){
+            return { code: 404 , msg: '缺少contentEl参数'};
+        }
+
+        // 返回内容
+        let res = RES_SERVICE_ERROR;
+
+        const title = '';
+
+        // 查询数据库是否已存在该小说
+        let sqlQuery = `SELECT * FROM T_Novel WHERE title = '${title}' OR url = '${web}'`;
+        let query = await this.ctx.service.sqliteDB.SQLiteQuery(sqlQuery);
+        
+        if(query.code == 200){
+            if(query.data.length > 0){
+                // 记录小说ID
+                const novelId = query.data[0].id;
+
+                // 从数据库获取小说章节
+                sqlQuery = `SELECT * FROM T_Content WHERE parentId = ${novelId}`;
+                query = await this.ctx.service.sqliteDB.SQLiteQuery(sqlQuery);
+
+                console.log(query);
+
+                let data = [];
+
+                if(query.code == 200){
+                    const sectionList = query.data;
+
+                    // const content = await this.getOneSectionContent(sectionList[0], contentEl, novelId);
+                    // console.log(content);
+
+                    // 通过章节获取内容
+                    for(let section of sectionList){
+                        const content = await this.getOneSectionContent(section, contentEl, novelId);
+                        if(content){
+                            data.push(content);
+                        }
+                        else{
+                            return RES_ACCESS_DENIED;
+                        }
+                    }
+                    res =  { code: 200 , data, msg: '请求成功'}; 
+                }
+                else{
+                    res = RES_SERVICE_ERROR; 
+                }                
+            }
+            else{
+                res =  { code: 404 , msg: '找不到该小说，请重新获取章节列表'}; 
+            }
+        }
+        else{
+            res = RES_SERVICE_ERROR; 
+        }
+        return res;
+    }
 }
 
 module.exports = SpiderService;

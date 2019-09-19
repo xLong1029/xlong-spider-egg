@@ -59,6 +59,7 @@
   </div> -->
   <div class="index-content">
     <!-- <div class="title">获取小说资源</div> -->
+    <!-- 以https://www.17k.com/list/3034368.html为例测试 -->
     <div class="form">
       <div class="form-inline">
         <label class="form-inline__label">网址：</label>
@@ -77,14 +78,14 @@
           <label class="form-inline__label">内容节点：</label>
           <input id="contentElement" class="input form-inline__input" style="width:80%;" type="text" value="" placeholder="例如：.content p" />
         </div>
-        <div class="form-inline">
+        <!-- <div class="form-inline">
           <label class="form-inline__label">选取章节：</label>
           第
           <input id="setcionStart" class="input form-inline__input mr-sm ml-sm" type="text" value="" placeholder="例如：1" />
           章至第
           <input id="setcionEnd" class="input form-inline__input mr-sm ml-sm" type="text" value="" placeholder="例如：5" />
           章
-        </div>
+        </div> -->
         <div class="form-inline">
           <label class="form-inline__label"></label>
           <button class="button primary" onclick="getNovelContentBySection()">获取章节内容</button>
@@ -92,15 +93,15 @@
       </div>
     </div>
     <div id="seticonContent" class="data">
-      <div class="data-hint">获取到的章节列表如下：</div>
+      <div class="data-hint mb-md">获取到的章节列表如下：</div>
       <ul id="sectionList" class="section-list"></ul>
     </div>
     <div id="contentCont" class="data">
-      <button class="button primary ml-sm" onclick="download()">
+      <button class="button primary mb-md" onclick="download()">
         下载TXT
       </button>
-      <div class="data-hint">获取到的内容如下：</div>
-      <ul id="contentList" class="section-list"></ul>
+      <div class="data-hint mb-md">获取到的章节内容如下：</div>
+      <div id="contentList" class="content-list"></div>
     </div>
   </div>
 </div>

@@ -135,6 +135,7 @@ function getNovelSection(){
 
     // 隐藏内容节点
     $getSectionCont.hide();
+    $contentCont.hide();
 
     var value = $inputNovel.val();
     var section = $sectionElement.val();
@@ -198,7 +199,6 @@ var $contentList = $('#contentList');
 // 获取通过章节获取小说内容
 function getNovelContentBySection(){
     $seticonContent.hide();
-    $sectionList.empty();
 
     $contentCont.hide();
     $contentList.empty();
@@ -218,7 +218,7 @@ function getNovelContentBySection(){
 
         $.ajax({
             type:'GET',
-            url: `/spider/4?web=${value}&contentEl=${content}`,
+            url: `/spider/5?web=${value}&contentEl=${content}`,
             success: function(res) {
                console.log(res);
 
@@ -226,8 +226,14 @@ function getNovelContentBySection(){
                     console.log('数据获取结束');
                     hideLoading();
 
-                    if(res.data && res.data.length > 0){
+                    if(res.data){
                         $contentCont.show();
+                        var content = '';                                        
+                        res.data.forEach(el => {
+                            content += `<p>${el}</p>`;
+                        });
+                        $contentList.append(content);
+                        // $contentList.append(res.data);
 
                         showAlertMsg('success','数据获取成功');
                     }
