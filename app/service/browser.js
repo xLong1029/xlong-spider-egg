@@ -108,7 +108,7 @@ class SpiderService extends Service {
     }
 
     /**
-     * 查找节点元素
+     * 查找元素选择器
      * 
      * @param {*} browser 浏览器实例
      * @param {*} page 页面实例
@@ -131,6 +131,21 @@ class SpiderService extends Service {
             console.log('已找到元素选择器，即将通过该选择器获取信息...');
             resolve(true);
         });
+    }
+
+    /**
+     * 通过元素选择器获取数据列表
+     * 
+     * @param {*} page 页面实例
+     * @param {*} selecter 元素选择器
+     */
+    async getChapterList(page, selecter){
+        return page.evaluate((selecter) => {
+            const list = [...document.querySelectorAll(selecter)];
+            return list.map(el => {
+                return { url: el.href ? el.href.trim() : null, title: el.innerText ? el.innerText : '该元素选择器无内容' };
+            })
+        }, selecter);
     }
 
     /**

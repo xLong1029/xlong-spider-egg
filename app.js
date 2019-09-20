@@ -1,8 +1,8 @@
 // 启动自定义
 class AppBootHook {
+
   constructor(app) {
     this.app = app;
-    
   }
 
   async didReady() {
@@ -20,7 +20,7 @@ class AppBootHook {
           }
       });
 
-      this.app.db = db;
+      this.app.db = db;  
   }
 }
 
