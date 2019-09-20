@@ -8,8 +8,6 @@ const path = require('path');
 
 // 加密模块
 const crypto = require('crypto');
-// 时间处理
-const moment = require('moment');
 
 // 跳转等待时间
 const timeout = 120000;
@@ -224,7 +222,7 @@ class SpiderService extends Service {
 
         // 查询数据库是否已存在该小说，不存在则新增
         let sqlQuery = `SELECT * FROM T_Novel WHERE title = '${title}' OR url = '${web}'`;
-        let sqlInsert = `INSERT INTO T_Novel (title, url, createTime) VALUES ('${title}', '${web}', '${moment().format('YYYY-MM-DD HH:mm:ss')}')`;
+        let sqlInsert = `INSERT INTO T_Novel (title, url) VALUES ('${title}', '${web}')`;
         let query = await this.ctx.service.sqliteDB.GetRecord(sqlQuery, sqlInsert, 'T_Novel');
 
         if(query.code !== 200) return RES_DATABASE_ERROR;
@@ -295,7 +293,7 @@ class SpiderService extends Service {
                 try{
                     console.log(`正在获取章节《${el.title}》...`);
                     const sqlQuery = `SELECT * FROM T_Content WHERE parentId = ${novelId} AND chapterTitle = '${el.title}' AND chapterNo = ${chapterNo}`;
-                    const sqlInsert = `INSERT INTO T_Content (parentId, chapterTitle, chapterNo, url, createTime) VALUES (${novelId}, '${el.title}', ${chapterNo}, '${el.url}', '${moment().format('YYYY-MM-DD HH:mm:ss')}')`;
+                    const sqlInsert = `INSERT INTO T_Content (parentId, chapterTitle, chapterNo, url) VALUES (${novelId}, '${el.title}', ${chapterNo}, '${el.url}')`;
                     await this.ctx.service.sqliteDB.GetRecord(sqlQuery, sqlInsert, 'T_Content');
                     
                     chapterNo ++;

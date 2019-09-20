@@ -26,6 +26,7 @@ function getImgOrPdf(type){
         
         $.ajax({
             type:'GET',
+            timeout : 300000, // 超时5min
             url: `/spider/${type}?web=${value}`,
             success: function(res) {
                 console.log(res);
@@ -75,8 +76,9 @@ function getPageData(){
         console.log('开始获取数据');
         showLoading('正在获取数据，请稍后...');
 
-        $.ajax({
+        var xhr = $.ajax({
             type:'GET',
+            timeout : 300000, // 超时5min
             url: `/spider/3?web=${value}&el=${element}`,
             success: function(res) {
                console.log(res);
@@ -105,8 +107,16 @@ function getPageData(){
                 }
             },
             error: function(err){
-               console.log('数据获取出错:', err);
-            }
+                hideLoading();
+                showAlertMsg('warning', '数据请求有误，请联系管理员！');
+                console.log('数据获取出错:', err);
+            },
+            complete: function (XMLHttpRequest,status) {
+                if(status == 'timeout') {
+                    xhr.abort(); //取消请求
+                    showAlertMsg('warning', '网络超时，请重试！');
+                }
+            }
         });
     }
 }
@@ -151,8 +161,9 @@ function getNovelSection(){
         console.log('开始获取数据');
         showLoading('正在获取数据，请稍后...');
 
-        $.ajax({
+        var xhr = $.ajax({
             type:'GET',
+            timeout : 300000, // 超时5min
             url: `/spider/4?web=${value}&chapterEl=${chapter}`,
             success: function(res) {
                console.log(res);
@@ -185,8 +196,16 @@ function getNovelSection(){
                 }
             },
             error: function(err){
-               console.log('数据获取出错:', err);
-            }
+                hideLoading();
+                showAlertMsg('warning', '数据请求有误，请联系管理员！');
+                console.log('数据获取出错:', err);
+            },
+            complete: function (XMLHttpRequest,status) {
+                if(status == 'timeout') {
+                    xhr.abort(); //取消请求
+                    showAlertMsg('warning', '网络超时，请重试！');
+                }
+            }
         });
     }
 }
@@ -215,7 +234,7 @@ function getNovelContentBySection(){
         console.log('开始获取数据');
         showLoading('正在获取数据，请稍后...');
 
-        $.ajax({
+        var xhr = $.ajax({
             type:'GET',
             url: `/spider/5?web=${value}&contentEl=${content}`,
             success: function(res) {
@@ -242,8 +261,16 @@ function getNovelContentBySection(){
                 }
             },
             error: function(err){
-               console.log('数据获取出错:', err);
-            }
+                hideLoading();
+                showAlertMsg('error', '请求失败');
+                console.log('数据获取出错:', err);
+            },
+            complete: function (XMLHttpRequest,status) {
+                if(status == 'timeout') {
+                    xhr.abort(); //取消请求
+                    showAlertMsg('warning', '网络超时，请重试！');
+                }
+            }
         });
     }
 }
