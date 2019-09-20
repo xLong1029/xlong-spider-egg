@@ -108,7 +108,7 @@ function getPageData(){
             },
             error: function(err){
                 hideLoading();
-                showAlertMsg('warning', '数据请求有误，请联系管理员！');
+                showAlertMsg('error', '请求失败，请重试！');
                 console.log('数据获取出错:', err);
             },
             complete: function (XMLHttpRequest,status) {
@@ -197,7 +197,7 @@ function getNovelSection(){
             },
             error: function(err){
                 hideLoading();
-                showAlertMsg('warning', '数据请求有误，请联系管理员！');
+                showAlertMsg('error', '请求失败，请重试！');
                 console.log('数据获取出错:', err);
             },
             complete: function (XMLHttpRequest,status) {
@@ -262,7 +262,7 @@ function getNovelContentBySection(){
             },
             error: function(err){
                 hideLoading();
-                showAlertMsg('error', '请求失败');
+                showAlertMsg('error', '请求失败，请重试！');
                 console.log('数据获取出错:', err);
             },
             complete: function (XMLHttpRequest,status) {
