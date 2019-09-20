@@ -1,7 +1,7 @@
 /*
  * 功能 : 封装SQLite方法。
  * 作者 : 罗永梅（381612175@qq.com）
- * 日期 : 2019-9-18
+ * 日期 : 2019-9-19
  * 版本 : version 1.0
  */
 const Service = require('egg').Service;
@@ -14,7 +14,7 @@ class SqliteDB_Service extends Service {
      */
     async SQLiteQuery(sql) {
         return new Promise((resolve, reject) => {
-            console.log('get sql:', sql);
+            // console.log('get sql:', sql);
             this.app.db.all(sql, (err, row) => {
                 if(err) reject({ code: 404, data: [], msg: err }); 
                 else resolve({ code: 200, data: row, msg: 'success' }); 

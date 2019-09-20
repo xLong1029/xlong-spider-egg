@@ -7,7 +7,7 @@ const fs = require('fs');
 // 路径操作对象
 const path = require('path');
 
-class StoreService extends Service {
+class BrowserService extends Service {
 
     /**
      * 读取路径信息
@@ -107,14 +107,12 @@ class StoreService extends Service {
 
     /**
      * 存储为txt文件，并返回文件存储路径
+     * @param {*} dir 路径地址
      * @param {*} file 文件(包含后缀名)
      * @param {*} content 文本内容
      */
-    async saveToTxt(file, content){
+    async saveToTxt(dir, file, content){
         if(!file || !content) return null;
-
-        const dir = await this.getStoreDir('txt');
-
         return new Promise((resolve, reject) => {
             // 写入文件
             fs.writeFile(`${dir}/${file}`, content, err => {
@@ -124,4 +122,4 @@ class StoreService extends Service {
     }
 }
 
-module.exports = StoreService;
+module.exports = BrowserService;

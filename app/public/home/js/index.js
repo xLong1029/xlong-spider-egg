@@ -121,29 +121,29 @@ function resetPageData(){
 }
 
 var $inputNovel = $('#inputNovel');
-var $sectionElement = $('#sectionElement');
+var $chapterElement = $('#chapterElement');
 
-var $seticonContent = $('#seticonContent');
-var $sectionList = $('#sectionList');
+var $chapterContent = $('#chapterContent');
+var $chapterList = $('#chapterList');
 
-var $getSectionCont = $('#getSectionCont');
+var $getChapterCont = $('#getChapterCont');
 
 // 获取小说章节
 function getNovelSection(){
-    $seticonContent.hide();
-    $sectionList.empty();
+    $chapterContent.hide();
+    $chapterList.empty();
 
     // 隐藏内容节点
-    $getSectionCont.hide();
+    $getChapterCont.hide();
     $contentCont.hide();
 
     var value = $inputNovel.val();
-    var section = $sectionElement.val();
+    var chapter = $chapterElement.val();
     
     if(!value || value === ''){
         showAlertMsg('warning','请输入网址');
     }
-    else if(!section || section === ''){
+    else if(!chapter || chapter === ''){
         showAlertMsg('warning','请输入章节节点');
     }
     else{
@@ -152,7 +152,7 @@ function getNovelSection(){
 
         $.ajax({
             type:'GET',
-            url: `/spider/4?web=${value}&sectionEl=${section}`,
+            url: `/spider/4?web=${value}&chapterEl=${chapter}`,
             success: function(res) {
                console.log(res);
 
@@ -161,20 +161,20 @@ function getNovelSection(){
                     hideLoading();
 
                     if(res.data && res.data.length > 0){
-                        $seticonContent.show();
-                        $getSectionCont.show();
+                        $chapterContent.show();
+                        $getChapterCont.show();
 
                         var content = '';                                        
                         res.data.forEach((el, index) => {
                             content += el.url ? `<li><a href="${el.url}" target="blank">${index + 1}.${el.title}</a></li>` : `<li>${index + 1}.${el.title}</li>`;
                         });
-                        $sectionList.append(content);
+                        $chapterList.append(content);
 
                         showAlertMsg('success','数据获取成功');
                     }
                     else{
-                        $seticonContent.hide();
-                        $getSectionCont.hide();
+                        $chapterContent.hide();
+                        $getChapterCont.hide();
                         showAlertMsg('warning','数据为空，请检查获取的数据网址是否正确');
                     }                    
                 }
@@ -197,7 +197,7 @@ var $downloadBtn = $('#download');
 
 // 获取通过章节获取小说内容
 function getNovelContentBySection(){
-    $seticonContent.hide();
+    $chapterContent.hide();
 
     $contentCont.hide();
 
