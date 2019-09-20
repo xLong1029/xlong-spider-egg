@@ -195,49 +195,57 @@ class SpiderService extends Service {
      * @param {*} web 站点URL
      */
     async getNovelChapter(web) {
-        const proxyList = await this.ctx.service.proxy.getProxyList();
-        if(!proxyList) return RES_SERVICE_ERROR;
-        else return {code: 200, data: proxyList, msg: '请求成功'};
+        const chapterEl = this.ctx.query.chapterEl;
+        if(!chapterEl || chapterEl == '') return { code: 400 , msg: '缺少chapterEl参数'};
 
-        /************** 调试代理服务器 *************/
+        let config = {};
 
+        // if(this.app.proxyList){
+        //     const proxyserver = this.app.proxyList[Math.round(Math.random() * this.app.proxyList.length)];
+        //     const proxyOption = `${proxyserver.type.toLowerCase()}://${proxyserver.ip}:${proxyserver.port}`;
 
-        // const chapterEl = this.ctx.query.chapterEl;
-        // if(!chapterEl || chapterEl == '') return { code: 400 , msg: '缺少chapterEl参数'};
+        //     config = { headless: false, args: ['--no-sandbox','--proxy-server=http://171.37.16.211:9797'] };
+        // }
 
-        // const browser = await this.ctx.service.browser.initBrowser();
-        // if(!browser) return RES_SERVICE_ERROR;
+        // console.log(config);
 
-        // const page = await this.ctx.service.browser.initPage(browser);
-        // if(!page) return RES_SERVICE_ERROR;
+        const browser = await this.ctx.service.browser.initBrowser({
+            headless: false,
+            args: ['--no-sandbox','--proxy-server=http://182.108.44.108:3128']
+        });
+        if(!browser) return RES_SERVICE_ERROR;
 
-        // await this.ctx.service.browser.setUA(page);
+        const page = await this.ctx.service.browser.initPage(browser);
+        if(!page) return RES_SERVICE_ERROR;
 
-        // const respond = await this.ctx.service.browser.gotoPage(browser, page, web, { timeout, waitUntil });
-        // if(!respond) return RES_ACCESS_DENIED;
+        await this.ctx.service.browser.setUA(page);
 
-        // const findSelecter = await this.ctx.service.browser.findSelector(browser, page, chapterEl);
-        // if(!findSelecter) return RES_NO_SELECTER;
+        const respond = await this.ctx.service.browser.gotoPage(browser, page, web, { timeout, waitUntil })
+        console.log(33333333333333, respond);
+        if(!respond) return RES_ACCESS_DENIED;
 
-        // // 获取页面标题
-        // const title = await page.title();
+        const findSelecter = await this.ctx.service.browser.findSelector(browser, page, chapterEl);
+        if(!findSelecter) return RES_NO_SELECTER;
 
-        // // 查询数据库是否已存在该小说，不存在则新增
-        // let sqlQuery = `SELECT * FROM T_Novel WHERE title = '${title}' OR url = '${web}'`;
-        // let sqlInsert = `INSERT INTO T_Novel (title, url, createTime) VALUES ('${title}', '${web}', '${moment().format('YYYY-MM-DD HH:mm:ss')}')`;
-        // let query = await this.ctx.service.sqliteDB.GetRecord(sqlQuery, sqlInsert, 'T_Novel');
+        // 获取页面标题
+        const title = await page.title();
 
-        // if(query.code !== 200) return RES_DATABASE_ERROR;
+        // 查询数据库是否已存在该小说，不存在则新增
+        let sqlQuery = `SELECT * FROM T_Novel WHERE title = '${title}' OR url = '${web}'`;
+        let sqlInsert = `INSERT INTO T_Novel (title, url, createTime) VALUES ('${title}', '${web}', '${moment().format('YYYY-MM-DD HH:mm:ss')}')`;
+        let query = await this.ctx.service.sqliteDB.GetRecord(sqlQuery, sqlInsert, 'T_Novel');
 
-        // const list = await this.ctx.service.browser.getListBySelecter(page, chapterEl);
+        if(query.code !== 200) return RES_DATABASE_ERROR;
 
-        // const novelId = query.data[0].id;
+        const list = await this.ctx.service.browser.getListBySelecter(page, chapterEl);
 
-        // const save = await this.saveChapterList(list, novelId);
-        // if(!save) return RES_DATABASE_ERROR;
+        const novelId = query.data[0].id;
 
-        // await this.ctx.service.browser.closeBrowser(browser);
-        // return { code: 200 , data: list, msg: '请求成功'};
+        const save = await this.saveChapterList(list, novelId);
+        if(!save) return RES_DATABASE_ERROR;
+
+        await this.ctx.service.browser.closeBrowser(browser);
+        return { code: 200 , data: list, msg: '请求成功'};
     }
 
     /**
@@ -302,7 +310,7 @@ class SpiderService extends Service {
                 }
                 catch(err){
                     console.log(err);
-                    reject(false);
+                    resolve(false);
                     return;
                 }
             }
@@ -391,7 +399,7 @@ class SpiderService extends Service {
                 try{
                     const content = await this.getOneChapterContent(browser, chapterList[recordNum], contentEl, novelId);
                     if(!content){
-                        reject(RES_SERVICE_ERROR);
+                        resolve(RES_SERVICE_ERROR);
                         break;
                     }
                     else{
@@ -404,7 +412,7 @@ class SpiderService extends Service {
                 }
                 catch(err){
                     console.log(err);
-                    reject(RES_SERVICE_ERROR);
+                    resolve(RES_SERVICE_ERROR);
                     break;
                 }
 
@@ -446,7 +454,7 @@ class SpiderService extends Service {
             //     }
             //     catch(err){
             //         console.log(err);
-            //         reject(RES_SERVICE_ERROR);
+            //         resolve(RES_SERVICE_ERROR);
             //     }
             // }, 1000);
         });

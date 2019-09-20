@@ -31,8 +31,7 @@ class SpiderService extends Service {
             if (!browser) {
                 console.log('无法启动浏览器！');
                 
-                reject(false);
-                return;
+                resolve(false);
             }
 
             resolve(browser);
@@ -65,8 +64,7 @@ class SpiderService extends Service {
 
                 await this.closeBrowser(browser);
 
-                reject(false);
-                return;
+                resolve(false);
             }
 
             resolve(page);
@@ -94,14 +92,14 @@ class SpiderService extends Service {
                 respond = await page.goto(url, config).catch(err => {
                     i-1 > 0 ? console.log('页面跳转失败，准备重试') : console.log(err);	
                 });
+
             }
             if (!respond) {
                 console.log('无法跳转至该链接！即将关闭浏览器...');
 
                 await this.closeBrowser(browser);
 
-                reject(false);
-                return;
+                resolve(false);
             }
             resolve(true);
         });
@@ -124,8 +122,7 @@ class SpiderService extends Service {
 
                 await this.closeBrowser(browser);
 
-                reject(false);
-                return;
+                resolve(false);
             }
 
             console.log('已找到元素选择器，即将通过该选择器获取信息...');
@@ -139,7 +136,7 @@ class SpiderService extends Service {
      * @param {*} page 页面实例
      * @param {*} selecter 元素选择器
      */
-    async getChapterList(page, selecter){
+    async getListBySelecter(page, selecter){
         return page.evaluate((selecter) => {
             const list = [...document.querySelectorAll(selecter)];
             return list.map(el => {

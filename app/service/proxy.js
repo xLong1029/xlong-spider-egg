@@ -9,7 +9,7 @@ const timeout = 120000;
 const waitUntil = 'domcontentloaded';
 
 // 获取资源地址
-const url = 'https://www.xicidaili.com/wt/3';
+const url = 'https://www.xicidaili.com/wn/';
 // 可获取数据的元素选择器
 const selecter = '#ip_list tr';
 
@@ -18,50 +18,64 @@ class ProxyService extends Service {
      * 获取代理服务ip列表
      */
     async getProxyList() {
-        const browser = await this.ctx.service.browser.initBrowser();
-        if(!browser) return false;
+        return new Promise(async (resolve, reject) => {
+            const browser = await this.ctx.service.browser.initBrowser();
+            if(!browser) return false;
 
-        const page = await this.ctx.service.browser.initPage(browser);
-        if(!page) return false;
+            const page = await this.ctx.service.browser.initPage(browser);
+            if(!page) return false;
 
-        // 设置浏览器信息
-        await this.ctx.service.browser.setUA(page);
+            // 设置浏览器信息
+            await this.ctx.service.browser.setUA(page);
 
-        const respond = await this.ctx.service.browser.gotoPage(browser, page, url, { timeout, waitUntil });
-        if(!respond) return false;
+            const respond = await this.ctx.service.browser.gotoPage(browser, page, url, { timeout, waitUntil });
+            if(!respond) return false;
 
-        const findSelecter = await this.ctx.service.browser.findSelector(browser, page, selecter);
-        if(!findSelecter) return false;        
+            const findSelecter = await this.ctx.service.browser.findSelector(browser, page, selecter);
+            if(!findSelecter) return false;
 
-        // 获取有效ip(这部分需根据不同的地址进行修改)
-        const proxyList = await page.evaluate((selecter) => {
-            let list = document.querySelectorAll(selecter);
-            if (!list) return false;
+            console.log('开始获取代理服务ip列表');
 
-            let result = [];
+            // 获取有效ip(这部分需根据不同的地址进行修改)
+            const proxyList = await page.evaluate((selecter) => {
+                let list = document.querySelectorAll(selecter);
+                if (!list) return false;
 
-            for (let i = 1; i < list.length; i++) {
-                let row = list[i];
-                let cells = row.querySelectorAll('td');
+                let result = [];
+                // 最多取20条即可
+                const maxLength = list.length > 20 ? 20 : list.length;
 
-                // 去除单位“秒”
-                let speed = parseFloat(cells[6].querySelector('div').getAttribute('title'));
-                if(speed <= 1){
-                    let alive = cells[8].innerText;
+                for (let i = 1; i < maxLength; i++) {
+                    let row = list[i];
+                    let cells = row.querySelectorAll('td');
 
-                    let ip = cells[1].innerText;
-                    let port = cells[2].innerText;
-                    let type = cells[5].innerText;
+                    // 去除单位“秒”
+                    let speed = parseFloat(cells[6].querySelector('div').getAttribute('title'));
+                    if(speed <= 1){
+                        
+                        let alive = cells[8].innerText;
 
-                    result.push({ ip, port, type, speed, alive });  
-                }            
+                        let ip = cells[1].innerText;
+                        let port = cells[2].innerText;
+                        let type = cells[5].innerText;
+
+                        result.push({ ip, port, type, speed, alive });  
+                    }            
+                }
+                return result;
+            }, selecter);
+
+            await this.ctx.service.browser.closeBrowser(browser);
+
+            if(!proxyList || proxyList.length === 0){
+                console.log('代理服务获取失败！');
+                resolve(false);
+                return;
             }
-            return result;
-        }, selecter);
 
-        await this.ctx.service.browser.closeBrowser(browser);
-
-        return proxyList;
+            console.log('代理服务已获取完成');
+            resolve(proxyList);
+        });
     }
 }
 
