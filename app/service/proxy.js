@@ -4,7 +4,7 @@ const Service = require('egg').Service;
 const puppeteer = require('puppeteer');
 
 // 跳转等待时间
-const timeout = 120000;
+const timeout = 3000;
 // 文档加载完才跳转页面
 const waitUntil = 'domcontentloaded';
 
@@ -34,7 +34,7 @@ class ProxyService extends Service {
             const findSelecter = await this.ctx.service.browser.findSelector(browser, page, selecter);
             if(!findSelecter) return false;
 
-            console.log('开始获取代理服务ip列表');
+            console.log('开始获取代理服务IP列表');
 
             // 获取有效ip(这部分需根据不同的地址进行修改)
             const proxyList = await page.evaluate((selecter) => {
@@ -47,21 +47,16 @@ class ProxyService extends Service {
                     let row = list[i];
                     let cells = row.querySelectorAll('td');
 
-                    // 去除单位“秒”
-                    let speed = parseFloat(cells[6].querySelector('div').getAttribute('title'));
-                    if(speed <= 1){
-                        let ip = cells[1].innerText;
-                        let port = cells[2].innerText;
-                        let host = cells[5].innerText; 
+                    let ip = cells[1].innerText;
+                    let port = cells[2].innerText;
+                    let host = cells[5].innerText; 
 
-                        result.push({
-                            server: `${host.toLowerCase()}://${ip}:${port}`,
-                            host,
-                            ip,
-                            port,
-                            speed: speed + '秒'
-                        });
-                    }            
+                    result.push({
+                        server: `${host.toLowerCase()}://${ip}:${port}`,
+                        host,
+                        ip,
+                        port
+                    });           
                 }
                 return result;
             }, selecter);
@@ -69,13 +64,62 @@ class ProxyService extends Service {
             await this.ctx.service.browser.closeBrowser(browser);
 
             if(!proxyList || proxyList.length === 0){
-                console.log('代理服务获取失败！');
+                console.log('代理服务IP列表获取失败！');
                 resolve(false);
                 return;
             }
 
-            console.log('代理服务已获取完成');
-            resolve(proxyList);
+            console.log('代理服务IP列表已获取完成！');
+
+            /** */
+            console.log('开始筛选可用服务IP：');
+
+            let useableProxyList = await new Promise(async (resolve, reject) => {
+                // let browserList = [];
+                let useableList = [];
+                // 代理服务器序号
+                let proxyNo = 1;
+
+                while(true) {
+                    console.log(`开始测试IP：${proxyList[proxyNo - 1].server}`);
+                    // 创建一个浏览器实例 Browser 对象
+                    const browser = await puppeteer.launch({
+                        // headless: false,
+                        args: ['--no-sandbox','--proxy-server=' + proxyList[proxyNo - 1].server]
+                    }).catch(() => browser.close());
+
+                    const page = await browser.newPage();
+
+                    // 筛选访问速度在3秒内的IP并保存该浏览器
+                    const respond = await page.goto('https://www.baidu.com', { timeout, waitUntil }).catch(err => {
+                        browser.close();
+                    });
+    
+                    if(respond){
+                        console.log(`IP: ${proxyList[proxyNo - 1].server}可用！`);
+                        useableList.push(proxyList[proxyNo - 1]);
+                        // browserList.push(browser);
+                    }
+
+                    browser.close();
+                    proxyNo ++;
+    
+                    if(proxyNo < proxyList.length){
+                        continue;
+                    }
+                    else{
+                        console.log('可用服务IP已筛选完成！');
+                        resolve(useableList);
+                        break;
+                    }                
+                }
+            });
+
+            // this.app.browserList = browserList;
+            // this.app.proxyList = useableProxyList;            
+            /** */
+
+            resolve(useableProxyList);
         });
     }
 }

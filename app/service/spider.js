@@ -196,13 +196,6 @@ class SpiderService extends Service {
         const chapterEl = this.ctx.query.chapterEl;
         if(!chapterEl || chapterEl == '') return { code: 400 , msg: '缺少chapterEl参数'};
 
-
-        // const browser = await this.ctx.service.browser.initBrowser({
-        //     headless: false,
-        //     args: ['--no-sandbox','--proxy-server=http://182.88.164.61:8123']
-        // });
-        // return {code: 400, msg:'eee'};
-
         const browser = await this.ctx.service.browser.initBrowser();
         if(!browser) return RES_SERVICE_ERROR;
 

@@ -90,8 +90,8 @@ function getPageData(){
                     if(res.data && res.data.length > 0){
                         $dataContent.show();
                         var content = '';                                        
-                        res.data.forEach(el => {
-                            content += el.url ? `<li><a href="${el.url}" target="blank">${el.title}</a></li>` : `<li>${el.title}</li>`;
+                        res.data.forEach(e => {
+                            content += e.url ? `<li><a href="${e.url}" target="blank">${e.title}</a></li>` : `<li>${e.title}</li>`;
                         });
                         $dataList.append(content);
                         // $dataList.append(res.data);
@@ -119,6 +119,61 @@ function getPageData(){
             }
         });
     }
+}
+
+var $proxyContent = $('#proxyContent');
+var $proxyList = $('#dataList');
+
+// 获取代理服务器
+function getProxyList(){    
+    $proxyContent.hide();
+    $proxyList.empty();
+
+    console.log('开始获取数据');
+    showLoading('正在获取数据，请稍后...');
+
+    var xhr = $.ajax({
+        type:'GET',
+        timeout : 300000, // 超时5min
+        url: `/proxy`,
+        success: function(res) {
+           console.log(res);
+
+            if(res.code == 200){
+                console.log('数据获取结束');
+                hideLoading();
+
+                if(res.data && res.data.length > 0){
+                    $dataContent.show();
+                    var content = '';                                        
+                    res.data.forEach(e => {
+                        content += `<li>${e.server}</li>`;
+                    });
+                    $proxyList.append(content);
+                    // $dataList.append(res.data);
+                    showAlertMsg('success','数据获取成功');
+                }
+                else{
+                    showAlertMsg('warning','数据为空，请重试！');
+                }                    
+            }
+            else{
+                hideLoading();
+                showAlertMsg('error', res.msg);
+            }
+        },
+        error: function(err){
+            hideLoading();
+            showAlertMsg('error', '请求失败，请重试！');
+            console.log('数据获取出错:', err);
+        },
+        complete: function (XMLHttpRequest,status) {
+            if(status == 'timeout') {
+                xhr.abort(); //取消请求
+                showAlertMsg('warning', '网络超时，请重试！');
+            }
+        }
+    });
 }
 
 // 重置获取页面数据
@@ -177,8 +232,8 @@ function getNovelSection(){
                         $getChapterCont.show();
 
                         var content = '';                                        
-                        res.data.forEach((el, index) => {
-                            content += el.url ? `<li><a href="${el.url}" target="blank">${index + 1}.${el.title}</a></li>` : `<li>${index + 1}.${el.title}</li>`;
+                        res.data.forEach((e, index) => {
+                            content += e.url ? `<li><a href="${e.url}" target="blank">${index + 1}.${e.title}</a></li>` : `<li>${index + 1}.${e.title}</li>`;
                         });
                         $chapterList.append(content);
 
