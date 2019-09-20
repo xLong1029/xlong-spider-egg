@@ -409,7 +409,7 @@ class SpiderService extends Service {
                     text += content;
     
                     recordNum ++;
-                    await this.ctx.helper.sleep(2000);
+                    await this.ctx.helper.sleep(1000);
                 }
 
                 if(recordNum < chapterLength){
