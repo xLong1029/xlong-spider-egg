@@ -7,8 +7,7 @@ const fs = require('fs');
 // 路径操作对象
 const path = require('path');
 
-class BrowserService extends Service {
-
+class StoreService extends Service {
     /**
      * 读取路径信息
      * 判断路径是否存在，不存在返回false
@@ -122,4 +121,4 @@ class BrowserService extends Service {
     }
 }
 
-module.exports = BrowserService;
+module.exports = StoreService;
