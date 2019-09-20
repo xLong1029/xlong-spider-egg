@@ -10,10 +10,11 @@ class HomeController extends Controller {
 
   async index() {
     const data = await this.ctx.service.index.getIndex();
-    if(!this.app.proxyList){
-      // 获取代理服务列表
-      this.app.proxyList = await this.ctx.service.proxy.getProxyList();
-    }
+    // 获取代理服务列表
+    // if(!this.app.proxyList){      
+    //   this.app.proxyList = await this.ctx.service.proxy.getProxyList();
+    //   console.log(this.app.proxyList);
+    // }
     await this.ctx.render('index.html', data);
   }
 

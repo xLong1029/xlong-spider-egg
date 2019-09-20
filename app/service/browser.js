@@ -32,6 +32,7 @@ class SpiderService extends Service {
                 console.log('无法启动浏览器！');
                 
                 resolve(false);
+                return;
             }
 
             resolve(browser);
@@ -63,8 +64,8 @@ class SpiderService extends Service {
                 console.log('打无法打开新页面！即将关闭浏览器...');
 
                 await this.closeBrowser(browser);
-
                 resolve(false);
+                return;
             }
 
             resolve(page);
@@ -98,8 +99,8 @@ class SpiderService extends Service {
                 console.log('无法跳转至该链接！即将关闭浏览器...');
 
                 await this.closeBrowser(browser);
-
                 resolve(false);
+                return;
             }
             resolve(true);
         });
@@ -121,8 +122,8 @@ class SpiderService extends Service {
                 console.log('找不到该元素！即将关闭浏览器...');
 
                 await this.closeBrowser(browser);
-
                 resolve(false);
+                return;
             }
 
             console.log('已找到元素选择器，即将通过该选择器获取信息...');

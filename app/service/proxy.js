@@ -9,7 +9,7 @@ const timeout = 120000;
 const waitUntil = 'domcontentloaded';
 
 // 获取资源地址
-const url = 'https://www.xicidaili.com/wn/';
+const url = 'https://www.xicidaili.com/wt/';
 // 可获取数据的元素选择器
 const selecter = '#ip_list tr';
 
@@ -42,24 +42,25 @@ class ProxyService extends Service {
                 if (!list) return false;
 
                 let result = [];
-                // 最多取20条即可
-                const maxLength = list.length > 20 ? 20 : list.length;
 
-                for (let i = 1; i < maxLength; i++) {
+                for (let i = 1; i < list.length; i++) {
                     let row = list[i];
                     let cells = row.querySelectorAll('td');
 
                     // 去除单位“秒”
                     let speed = parseFloat(cells[6].querySelector('div').getAttribute('title'));
                     if(speed <= 1){
-                        
-                        let alive = cells[8].innerText;
-
                         let ip = cells[1].innerText;
                         let port = cells[2].innerText;
-                        let type = cells[5].innerText;
+                        let host = cells[5].innerText; 
 
-                        result.push({ ip, port, type, speed, alive });  
+                        result.push({
+                            server: `${host.toLowerCase()}://${ip}:${port}`,
+                            host,
+                            ip,
+                            port,
+                            speed: speed + '秒'
+                        });
                     }            
                 }
                 return result;

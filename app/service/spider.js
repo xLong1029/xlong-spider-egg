@@ -198,21 +198,14 @@ class SpiderService extends Service {
         const chapterEl = this.ctx.query.chapterEl;
         if(!chapterEl || chapterEl == '') return { code: 400 , msg: '缺少chapterEl参数'};
 
-        let config = {};
 
-        // if(this.app.proxyList){
-        //     const proxyserver = this.app.proxyList[Math.round(Math.random() * this.app.proxyList.length)];
-        //     const proxyOption = `${proxyserver.type.toLowerCase()}://${proxyserver.ip}:${proxyserver.port}`;
+        // const browser = await this.ctx.service.browser.initBrowser({
+        //     headless: false,
+        //     args: ['--no-sandbox','--proxy-server=http://182.88.164.61:8123']
+        // });
+        // return {code: 400, msg:'eee'};
 
-        //     config = { headless: false, args: ['--no-sandbox','--proxy-server=http://171.37.16.211:9797'] };
-        // }
-
-        // console.log(config);
-
-        const browser = await this.ctx.service.browser.initBrowser({
-            headless: false,
-            args: ['--no-sandbox','--proxy-server=http://182.108.44.108:3128']
-        });
+        const browser = await this.ctx.service.browser.initBrowser();
         if(!browser) return RES_SERVICE_ERROR;
 
         const page = await this.ctx.service.browser.initPage(browser);
@@ -221,7 +214,6 @@ class SpiderService extends Service {
         await this.ctx.service.browser.setUA(page);
 
         const respond = await this.ctx.service.browser.gotoPage(browser, page, web, { timeout, waitUntil })
-        console.log(33333333333333, respond);
         if(!respond) return RES_ACCESS_DENIED;
 
         const findSelecter = await this.ctx.service.browser.findSelector(browser, page, chapterEl);
@@ -274,7 +266,7 @@ class SpiderService extends Service {
         const isExists = await this.ctx.service.store.fileExists(target);
         if(isExists) return { code: 200 , data: { list: [], url: `${dir.substring(4,dir.length)}/${title}.txt` }, msg: '请求成功，返回已存在的文件'};
         
-        // 若文件不存在从数据库获取小说章节和内容
+        // 若文件不存在则从数据库获取小说章节和内容
         sqlQuery = `SELECT * FROM T_Content WHERE parentId = ${novelId}`;
         query = await this.ctx.service.sqliteDB.SQLiteQuery(sqlQuery);
 
@@ -283,7 +275,7 @@ class SpiderService extends Service {
         const browser = await this.ctx.service.browser.initBrowser();
         if(!browser) return RES_SERVICE_ERROR;
 
-        return await this.loopGetChapterContent(browser, query.data, contentEl, novelId, title, dir); 
+        return await this.loopGetChapterContent(browser, query.data, contentEl, novelId, title, dir);
     }
 
     /**
@@ -329,26 +321,32 @@ class SpiderService extends Service {
      * @param {*} novelId 小说ID
      */
     async getOneChapterContent(browser, chapter, selecter, novelId){
-        console.log(`正在获取《${chapter.chapterTitle}》的内容...`);
+        return new Promise(async(resolve, reject) => {
 
-        // 判断章节是否包含内容
-        let sqlQuery = `SELECT * FROM T_Content WHERE parentId = ${novelId} AND chapterNo = ${chapter.chapterNo} AND contentIsNull = 0`;
-        let query = await this.ctx.service.sqliteDB.SQLiteQuery(sqlQuery);
+            // 判断数据库中章节是否包含内容，若有内容则返回
+            let sqlQuery = `SELECT * FROM T_Content WHERE parentId = ${novelId} AND chapterNo = ${chapter.chapterNo} AND contentIsNull = 0`;
+            let query = await this.ctx.service.sqliteDB.SQLiteQuery(sqlQuery);
+            if(query.code == 200 && query.data.length > 0){
+                console.log(`记录已存在，即将从数据库读取《${chapter.chapterTitle}》的内容...`);
+                resolve(chapter.chapterTitle + line + line + query.data[0].content + line);
+                return;
+            }
 
-        if(query.code == 200 && query.data.length > 0){
-            return chapter.chapterTitle + line + line + content + line;
-        }
-        else{
-            const page = await browser.newPage();
+            console.log(`数据库无此记录，正在获取《${chapter.chapterTitle}》的内容...`);
 
-            // 设置浏览器信息
+            const page = await this.ctx.service.browser.initPage(browser);
+            if(!page){
+                resolve(false);
+                return;
+            }
+
             await this.ctx.service.browser.setUA(page);
 
-            // 跳转到网址
-            const respond = await page.goto(chapter.url, { timeout, waitUntil }).catch(err => console.log(err));
-            if (!respond) {
-                browser.close();
-                return false;
+            const respond = await this.ctx.service.browser.gotoPage(browser, page, chapter.url, { timeout, waitUntil })
+            if(!respond){
+                await this.ctx.service.browser.closeBrowser(browser);
+                resolve(false);
+                return;
             }
 
             // 等章节内容加载完
@@ -366,13 +364,22 @@ class SpiderService extends Service {
 
                 return cot;
             }, selecter);
+            
+            if(!content || content == ''){
+                page.close();
+                resolve(false);
+                return;
+            }
 
             // 更新内容
-            sqlQuery = `UPDATE T_Content SET content = '${content}' WHERE parentId = ${novelId} AND chapterNo = ${chapter.chapterNo} AND contentIsNull = 0;`
+            sqlQuery = `UPDATE T_Content SET content = '${content}', contentIsNull = 0 WHERE parentId = ${novelId} AND chapterNo = ${chapter.chapterNo} AND contentIsNull = 1;`
             query = await this.ctx.service.sqliteDB.SQLiteQuery(sqlQuery);
-        
-            return chapter.chapterTitle + line + line + content + line;
-        }
+
+            await this.ctx.helper.sleep(1000);
+
+            page.close();
+            resolve(chapter.chapterTitle + line + line + content + line);
+        });
     }
 
     /**
@@ -396,24 +403,13 @@ class SpiderService extends Service {
             let recordNum = 0;
 
             while(true) {
-                try{
-                    const content = await this.getOneChapterContent(browser, chapterList[recordNum], contentEl, novelId);
-                    if(!content){
-                        resolve(RES_SERVICE_ERROR);
-                        break;
-                    }
-                    else{
-                        list.push(content);
-                        text += content;
-        
-                        recordNum ++;
-                        await this.ctx.helper.sleep(2000);
-                    }
-                }
-                catch(err){
-                    console.log(err);
-                    resolve(RES_SERVICE_ERROR);
-                    break;
+                const content = await this.getOneChapterContent(browser, chapterList[recordNum], contentEl, novelId);
+                if(content){
+                    list.push(content);
+                    text += content;
+    
+                    recordNum ++;
+                    await this.ctx.helper.sleep(2000);
                 }
 
                 if(recordNum < chapterLength){
@@ -421,42 +417,12 @@ class SpiderService extends Service {
                 }
                 else{
                     const url = await this.ctx.service.store.saveToTxt(dir, `${title}.txt`, text);
-
                     console.log('章节内容已全部获取完成！');
-
+                    await this.ctx.service.browser.closeBrowser(browser);
                     resolve({ code: 200 , data: { list, url }, msg: '请求成功'});
                     break;
                 }
             }
-
-            // 每间隔1秒获取1条数据，缓和内存泄漏的问题
-            // const timer = setInterval(async() => {
-            //     try{
-            //         console.log(recordNum);
-
-            //         const content = await this.getOneChapterContent(chapterList[recordNum], contentEl, novelId);
-            //         if(content){
-            //             list.push(content);
-            //             text += content;
-        
-            //             recordNum += 1;
-            //         }
-
-            //         if(recordNum >= chapterLength){
-            //             console.log('章节内容已全部获取完成！');
-
-            //             clearInterval(timer);
-
-            //             const url = await this.ctx.service.store.saveToTxt(`${title}.txt`, text);
-
-            //             resolve({ code: 200 , data: { list, url }, msg: '请求成功'});
-            //         }
-            //     }
-            //     catch(err){
-            //         console.log(err);
-            //         resolve(RES_SERVICE_ERROR);
-            //     }
-            // }, 1000);
         });
     }
 }

@@ -136,6 +136,7 @@ function getNovelSection(){
     // 隐藏内容节点
     $getChapterCont.hide();
     $contentCont.hide();
+    $contentElement.val('');
 
     var value = $inputNovel.val();
     var chapter = $chapterElement.val();
