@@ -216,13 +216,13 @@ class SpiderService extends Service {
         // 查询数据库是否已存在该小说，不存在则新增
         let sqlQuery = `SELECT * FROM T_Novel WHERE title = '${title}' OR url = '${web}'`;
         let sqlInsert = `INSERT INTO T_Novel (title, url) VALUES ('${title}', '${web}')`;
-        let query = await this.ctx.service.sqliteDB.GetRecord(sqlQuery, sqlInsert, 'T_Novel');
+        let query = await this.ctx.service.sqliteDB.NonExistentInsert(sqlQuery, sqlInsert, 'T_Novel');
 
         if(query.code !== 200) return RES_DATABASE_ERROR;
 
         const list = await this.ctx.service.browser.getListBySelecter(page, chapterEl);
 
-        const novelId = query.data[0].id;
+        const novelId = query.data.id;
 
         const save = await this.saveChapterList(list, novelId);
         if(!save) return RES_DATABASE_ERROR;
@@ -241,14 +241,13 @@ class SpiderService extends Service {
 
         // 查询数据库是否已存在该小说
         let sqlQuery = `SELECT * FROM T_Novel WHERE url = '${web}'`;
-        let query = await this.ctx.service.sqliteDB.SQLiteQuery(sqlQuery);
+        let query = await this.ctx.service.sqliteDB.GetRecord(sqlQuery);
 
-        if(query.code !== 200) return RES_DATABASE_ERROR;
-        if(query.data.length <= 0) return { code: 404 , msg: '找不到该小说，请重新获取章节列表'};
+        if(!query || !query.data) return { code: 404 , msg: '找不到该小说，请重新获取章节列表'};
 
         // 记录小说ID
-        const novelId = query.data[0].id;
-        const title = query.data[0].title;
+        const novelId = query.data.id;
+        const title = query.data.title;
 
         // 查找是否已有此文件
         const dir = await this.ctx.service.store.getStoreDir('txt');
@@ -287,7 +286,7 @@ class SpiderService extends Service {
                     console.log(`正在获取章节《${el.title}》...`);
                     const sqlQuery = `SELECT * FROM T_Content WHERE parentId = ${novelId} AND chapterTitle = '${el.title}' AND chapterNo = ${chapterNo}`;
                     const sqlInsert = `INSERT INTO T_Content (parentId, chapterTitle, chapterNo, url) VALUES (${novelId}, '${el.title}', ${chapterNo}, '${el.url}')`;
-                    await this.ctx.service.sqliteDB.GetRecord(sqlQuery, sqlInsert, 'T_Content');
+                    await this.ctx.service.sqliteDB.NonExistentInsert(sqlQuery, sqlInsert, 'T_Content');
                     
                     chapterNo ++;
                 }
@@ -316,10 +315,10 @@ class SpiderService extends Service {
 
             // 判断数据库中章节是否包含内容，若有内容则返回
             let sqlQuery = `SELECT * FROM T_Content WHERE parentId = ${novelId} AND chapterNo = ${chapter.chapterNo} AND contentIsNull = 0`;
-            let query = await this.ctx.service.sqliteDB.SQLiteQuery(sqlQuery);
-            if(query.code == 200 && query.data.length > 0){
+            let query = await this.ctx.service.sqliteDB.GetRecord(sqlQuery);
+            if(query.code == 200 && query.data){
                 console.log(`记录已存在，即将从数据库读取《${chapter.chapterTitle}》的内容...`);
-                resolve(chapter.chapterTitle + line + line + query.data[0].content + line);
+                resolve(chapter.chapterTitle + line + line + query.data.content + line);
                 return;
             }
 
@@ -364,7 +363,7 @@ class SpiderService extends Service {
 
             // 更新内容
             sqlQuery = `UPDATE T_Content SET content = '${content}', contentIsNull = 0 WHERE parentId = ${novelId} AND chapterNo = ${chapter.chapterNo} AND contentIsNull = 1;`
-            query = await this.ctx.service.sqliteDB.SQLiteQuery(sqlQuery);
+            await this.ctx.service.sqliteDB.SQLiteQuery(sqlQuery);
 
             await this.ctx.helper.sleep(500);
 
