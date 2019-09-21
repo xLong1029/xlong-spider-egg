@@ -1,8 +1,8 @@
-# xlong-spider-egg
+# xlong-spider-egg
 
-## 介绍
+## 介绍
 
-xlong-spider-egg 是一套基于Egg + Puppeteer + Sqlite3 开发的简易版爬虫项目（仅供学习和娱乐，违法的事不能做啊~）。
+xlong-spider-egg 是一套基于Egg + Puppeteer + Sqlite3 开发的简易版爬虫项目（仅供学习和娱乐，请勿商用）。
 
 ## 项目说明
 
