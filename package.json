@@ -11,8 +11,7 @@
     "egg-scripts": "^2.11.0",
     "egg-view-nunjucks": "^2.2.0",
     "puppeteer": "^1.19.0",
-    "sqlite3": "^4.1.0",
-    "moment": "^2.24.0"
+    "sqlite3": "^4.1.0"
   },
   "devDependencies": {
     "autod": "^3.0.1",
