@@ -204,7 +204,7 @@ class SpiderService extends Service {
 
         await this.ctx.service.browser.setUA(page);
 
-        const respond = await this.ctx.service.browser.gotoPage(browser, page, web, { timeout, waitUntil })
+        const respond = await this.ctx.service.browser.gotoPage(browser, page, web, { timeout, waitUntil });
         if(!respond) return RES_ACCESS_DENIED;
 
         const findSelecter = await this.ctx.service.browser.findSelector(browser, page, chapterEl);
@@ -332,15 +332,15 @@ class SpiderService extends Service {
 
             await this.ctx.service.browser.setUA(page);
 
-            const respond = await this.ctx.service.browser.gotoPage(browser, page, chapter.url, { timeout, waitUntil })
+            const respond = await this.ctx.service.browser.gotoPage(browser, page, chapter.url, { timeout, waitUntil });
             if(!respond){
                 await this.ctx.service.browser.closeBrowser(browser);
                 resolve(false);
                 return;
             }
 
-            // 等章节内容加载完
-            // await page.waitForSelector('.readAreaBox');
+            const findSelecter = await this.ctx.service.browser.findSelector(browser, page, selecter);
+            if(!findSelecter) return RES_NO_SELECTER;
 
             let content = '';
 

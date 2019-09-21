@@ -18,66 +18,65 @@ class ProxyService extends Service {
      * 获取代理服务ip列表
      */
     async getProxyList() {
-       return await this.ctx.service.sqliteDB.GetQueryNum(`select count(*) from T_Proxy`);
-        // return new Promise(async (resolve, reject) => {
-        //     const browser = await this.ctx.service.browser.initBrowser({
-        //         // headless: false
-        //     });
-        //     if(!browser) return false;
+        return new Promise(async (resolve, reject) => {
+            const browser = await this.ctx.service.browser.initBrowser({
+                // headless: false
+            });
+            if(!browser) return false;
 
-        //     const page = await this.ctx.service.browser.initPage(browser);
-        //     if(!page) return false;
+            const page = await this.ctx.service.browser.initPage(browser);
+            if(!page) return false;
 
-        //     // 设置浏览器信息
-        //     await this.ctx.service.browser.setUA(page);
+            // 设置浏览器信息
+            await this.ctx.service.browser.setUA(page);
 
-        //     const respond = await this.ctx.service.browser.gotoPage(browser, page, url, { timeout, waitUntil });
-        //     if(!respond) return false;
+            const respond = await this.ctx.service.browser.gotoPage(browser, page, url, { timeout, waitUntil });
+            if(!respond) return false;
 
-        //     const findSelecter = await this.ctx.service.browser.findSelector(browser, page, selecter);
-        //     if(!findSelecter) return false;
+            const findSelecter = await this.ctx.service.browser.findSelector(browser, page, selecter);
+            if(!findSelecter) return false;
 
-        //     console.log('开始获取代理服务IP列表');
+            console.log('开始获取代理服务IP列表');
 
-        //     // 获取有效ip(这部分需根据不同的地址进行修改)
-        //     const ipList = await page.evaluate((selecter) => {
-        //         let list = document.querySelectorAll(selecter);
-        //         if (!list) return false;
+            // 获取有效ip(这部分需根据不同的地址进行修改)
+            const ipList = await page.evaluate((selecter) => {
+                let list = document.querySelectorAll(selecter);
+                if (!list) return false;
 
-        //         let result = [];
+                let result = [];
 
-        //         for (let i = 1; i < list.length; i++) {
-        //             let cells = list[i].querySelectorAll('td');
+                for (let i = 1; i < list.length; i++) {
+                    let cells = list[i].querySelectorAll('td');
 
-        //             let host = cells[1].innerText;
-        //             let port = cells[2].innerText;
-        //             let scheme = cells[5].innerText; 
+                    let host = cells[1].innerText;
+                    let port = cells[2].innerText;
+                    let scheme = cells[5].innerText; 
 
-        //             // -proxy-server 地址格式：[<proxy-scheme>://]<proxy-host>[:<proxy-port>]
-        //             result.push({
-        //                 url: `${scheme.toLowerCase()}://${host}:${port}`,
-        //                 scheme,
-        //                 host,
-        //                 port
-        //             });           
-        //         }
-        //         return result;
-        //     }, selecter);
+                    // -proxy-server 地址格式：[<proxy-scheme>://]<proxy-host>[:<proxy-port>]
+                    result.push({
+                        url: `${scheme.toLowerCase()}://${host}:${port}`,
+                        scheme,
+                        host,
+                        port
+                    });           
+                }
+                return result;
+            }, selecter);
 
-        //     await this.ctx.service.browser.closeBrowser(browser);
+            await this.ctx.service.browser.closeBrowser(browser);
 
-        //     if(!ipList || ipList.length === 0){
-        //         console.log('代理服务IP列表获取失败！');
-        //         resolve(false);
-        //         return;
-        //     }
+            if(!ipList || ipList.length === 0){
+                console.log('代理服务IP列表获取失败！');
+                resolve(false);
+                return;
+            }
 
-        //     console.log('代理服务IP列表已获取完成！');
+            console.log('代理服务IP列表已获取完成！');
 
-        //     let proxyList = await this.getUseableProxyList(ipList);
+            let proxyList = await this.getUseableProxyList(ipList);
 
-        //     resolve(proxyList);
-        // });
+            resolve(proxyList);
+        });
     }
 
     /**
