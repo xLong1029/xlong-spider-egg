@@ -254,8 +254,8 @@ class SpiderService extends Service {
         const dir = await this.ctx.service.store.getStoreDir('txt');
         const target = path.join(this.config.baseDir, `${dir}/`, `${title}.txt`);
         // 文件存在则返回文件路径
-        const isExists = await this.ctx.service.store.fileExists(target);
-        if(isExists) return { code: 200 , data: { list: [], url: `${dir.substring(4,dir.length)}/${title}.txt` }, msg: '请求成功，返回已存在的文件'};
+        const isExist = await this.ctx.service.store.fileExists(target);
+        if(isExist) return { code: 200 , data: { list: [], url: `${dir.substring(4,dir.length)}/${title}.txt` }, msg: '请求成功，返回已存在的文件'};
         
         // 若文件不存在则从数据库获取小说章节和内容
         sqlQuery = `SELECT * FROM T_Content WHERE parentId = ${novelId}`;
@@ -366,7 +366,7 @@ class SpiderService extends Service {
             sqlQuery = `UPDATE T_Content SET content = '${content}', contentIsNull = 0 WHERE parentId = ${novelId} AND chapterNo = ${chapter.chapterNo} AND contentIsNull = 1;`
             query = await this.ctx.service.sqliteDB.SQLiteQuery(sqlQuery);
 
-            await this.ctx.helper.sleep(1000);
+            await this.ctx.helper.sleep(500);
 
             page.close();
             resolve(chapter.chapterTitle + line + line + content + line);

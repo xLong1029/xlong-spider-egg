@@ -140,6 +140,7 @@ class SpiderService extends Service {
     async getListBySelecter(page, selecter){
         return page.evaluate((selecter) => {
             const list = [...document.querySelectorAll(selecter)];
+            if (!list) return false;
             return list.map(el => {
                 return { url: el.href ? el.href.trim() : null, title: el.innerText ? el.innerText : '该元素选择器无内容' };
             })

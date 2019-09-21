@@ -17,7 +17,7 @@ class HomeController extends Controller {
   // 获取代理服务器IP
   async proxy() {
     if(!this.app.proxyList){      
-      await this.ctx.service.proxy.getProxyList();
+      this.app.proxyList = await this.ctx.service.proxy.getProxyList();
     }
     if(!this.app.proxyList) this.ctx.body = { code: 404, msg: '请求失败，无法获取代理服务器列表'};
     else this.ctx.body = { code: 200, data: this.app.proxyList, msg:'请求成功' };

@@ -38,13 +38,13 @@ class StoreService extends Service {
      * @param {*} dir 路径地址
      */
     async dirExists(dir) {
-        let isExists = await this.getStat(dir);
+        let isExist = await this.getStat(dir);
         // 如果该路径且不是文件，返回true
-        if (isExists && isExists.isDirectory()) {
+        if (isExist && isExist.isDirectory()) {
             return true;
         }
         // 如果该路径存在但是文件，返回false
-        else if (isExists) {
+        else if (isExist) {
             return false;
         }
         // 如果该路径不存在
@@ -94,10 +94,10 @@ class StoreService extends Service {
 
         // 找到存放的位置
         const target = path.join(this.config.baseDir, `${dir}/`, file);
-        const isExists = await this.fileExists(target);
+        const isExist = await this.fileExists(target);
 
         // 文件存在则返回文件路径
-        if(isExists){
+        if(isExist){
             // 只取public/upload/xxx路径
             return `${dir.substring(4,dir.length)}/${file}`;
         }

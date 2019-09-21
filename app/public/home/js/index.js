@@ -121,8 +121,17 @@ function getPageData(){
     }
 }
 
+// 重置获取页面数据
+function resetPageData(){
+    $inputData.val('');
+    $inputElement.val('');
+
+    $dataList.empty();
+    $dataContent.hide();
+}
+
 var $proxyContent = $('#proxyContent');
-var $proxyList = $('#dataList');
+var $proxyList = $('#proxyList');
 
 // 获取代理服务器
 function getProxyList(){    
@@ -130,7 +139,7 @@ function getProxyList(){
     $proxyList.empty();
 
     console.log('开始获取数据');
-    showLoading('正在获取数据，请稍后...');
+    showLoading('正在获取数据，可能需要3-10分钟，请稍后...');
 
     var xhr = $.ajax({
         type:'GET',
@@ -144,10 +153,10 @@ function getProxyList(){
                 hideLoading();
 
                 if(res.data && res.data.length > 0){
-                    $dataContent.show();
+                    $proxyContent.show();
                     var content = '';                                        
                     res.data.forEach(e => {
-                        content += `<li>${e.server}</li>`;
+                        content += `<li>${e.url}</li>`;
                     });
                     $proxyList.append(content);
                     // $dataList.append(res.data);
@@ -174,15 +183,6 @@ function getProxyList(){
             }
         }
     });
-}
-
-// 重置获取页面数据
-function resetPageData(){
-    $inputData.val('');
-    $inputElement.val('');
-
-    $dataList.empty();
-    $dataContent.hide();
 }
 
 var $inputNovel = $('#inputNovel');
