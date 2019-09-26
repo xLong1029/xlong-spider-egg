@@ -9,7 +9,7 @@ const timeout = 3000;
 const waitUntil = 'domcontentloaded';
 
 // 获取资源地址
-const url = 'https://www.xicidaili.com/wt/5';
+const url = 'https://www.xicidaili.com/wt/8';
 // 可获取数据的元素选择器
 const selecter = '#ip_list tr';
 
@@ -121,7 +121,6 @@ class ProxyService extends Service {
                     if(isExist){
                         // 从数据库中删除该记录
                         console.log(`IP地址: ${proxy.url} 不可用！即将从数据库中移除...`);
-                        console.log(query.data[0].id);
                         await this.ctx.service.sqliteDB.SQLiteQuery(`DELETE FROM T_Proxy WHERE id = ${query.data[0].id}`);
                     }
                 });
