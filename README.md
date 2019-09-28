@@ -107,7 +107,7 @@ xlong-spider-egg 是一套基于Egg + Puppeteer + Sqlite3 开发的简易�
 * 默认端口启动：
 > npm run dev
 
-访问地址：http://localhost:6060
+访问地址：http://localhost:7001
 
 ## 项目打包
 > npm run build
