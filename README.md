@@ -105,23 +105,12 @@ xlong-spider-egg 是一套基于Egg + Puppeteer + Sqlite3 开发的简易�
 
 2. 运行项目
 * 默认端口启动：
-> npm start
+> npm run dev
 
-访问地址：http://localhost:4200
-
-* 自定义端口启动：
-> ng serve --port 4201 --open
-
-访问地址：http://localhost:4201，--open 指令会自动启动浏览器
-
-## 项目测试
-> npm run test
+访问地址：http://localhost:6060
 
 ## 项目打包
 > npm run build
-
-## Angular官方项目学习
-在线例子： https://stackblitz.com/angular/vmeynjlxkqa
 
 ## 作者联系方式
 
