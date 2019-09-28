@@ -112,7 +112,6 @@ xlong-spider-egg 是一套基于Egg + Puppeteer + Sqlite3 开发的简易�
 ## 项目打包
 > npm run build
 
-
 ## 作者联系方式
 
 QQ：381612175
