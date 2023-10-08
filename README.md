@@ -1,16 +1,27 @@
 # xlong-spider-egg
 
+## 重要通知！！！ 
+我的账号在Github开启2FA设置后，因某种原因丢失恢复码导致账号无法登录，日后该账号下的所有项目在github不再更新，若想查看持续更新的项目请移步到 [我的码云仓库](https://gitee.com/xlong1029)
+
 ## 介绍
 
-xlong-spider-egg 是一套基于Egg + Puppeteer + Sqlite3 开发的简易版爬虫项目（仅供学习和娱乐，请勿商用）。
+xlong-spider-egg 是一套基于Egg + Puppeteer + Sqlite3 开发的简易版爬虫项目（仅供学习和娱乐，请勿商用）。
+
+## 项目迭代
+
+1. V1.0版本
+
+    可通过配置的节点获取小说内容并下载
+    可通过配置的节点获取网页相关信息
+    可截取网页图片，存储为jpg格式图片
+    可获取网页信息，存储为pdf文件
+
+2. V2.0版本
+
+    正在开发...  
+    预计添加功能：添加代理服务器，通过代理服务器爬取数据，开启多浏览器模式，加快爬取速度
 
 ## 项目说明
-
-#### 1. 包含功能
-- 可通过配置的节点获取小说内容并下载
-- 可通过配置的节点获取网页相关信息
-- 可截取网页图片，存储为jpg格式图片
-- 可获取网页信息，存储为pdf文件
 
 #### 2. 项目用到技术、框架与插件
 [Node.js](https://github.com/nodejs)  
@@ -23,6 +34,7 @@ xlong-spider-egg 是一套基于Egg + Puppeteer + Sqlite3 开发的简易�
 响应式页面，主要兼容浏览器：IE10+、IE Edge、Safai、Firefox、Chrome等。
 
 ## 部分项目运行截图
+
 * 获取小说
 
 ![Image text](static/images/screen-1.gif)
@@ -82,6 +94,7 @@ xlong-spider-egg 是一套基于Egg + Puppeteer + Sqlite3 开发的简易�
 │  │
 │  ├─service // 用来执行具体的操作
 │  │    sqliteDB.js // Sqlite查询封装方法
+│  │    proxy.js  // 代理服务器相关操作
 │  │    browser.js // 浏览器相关操作 
 │  │    spider.js // 爬虫相关服务
 │  │    store.js // 文件存储服务 

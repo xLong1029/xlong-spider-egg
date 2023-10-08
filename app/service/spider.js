@@ -204,7 +204,7 @@ class SpiderService extends Service {
 
         await this.ctx.service.browser.setUA(page);
 
-        const respond = await this.ctx.service.browser.gotoPage(browser, page, web, { timeout, waitUntil })
+        const respond = await this.ctx.service.browser.gotoPage(browser, page, web, { timeout, waitUntil });
         if(!respond) return RES_ACCESS_DENIED;
 
         const findSelecter = await this.ctx.service.browser.findSelector(browser, page, chapterEl);
